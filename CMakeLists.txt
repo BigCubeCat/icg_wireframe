@@ -56,4 +56,6 @@ qt_generate_deploy_app_script(TARGET icg_wireframe OUTPUT_SCRIPT deploy_script
                               NO_UNSUPPORTED_PLATFORM_ERROR)
 install(SCRIPT ${deploy_script})
 
+add_subdirectory(lib/editor)
+add_subdirectory(lib/model)
 add_subdirectory(lib/mainwindow)

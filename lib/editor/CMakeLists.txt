@@ -1,15 +1,15 @@
 # Важно: включаем .ui файл в список исходников.
-qt_add_library(mainwindow STATIC mainwindow.cpp mainwindow.hpp mainwindow.ui)
+qt_add_library(editor STATIC editor.cpp editor.hpp editor.ui)
 
 target_link_libraries(
-  mainwindow
+  editor
   PUBLIC Qt6::Core
          Qt6::Widgets
          Qt6::Gui
          Qt6::Qml
          Qt6::Quick
          Qt6::QuickWidgets
-         model
-         editor)
+         Qt6::QuickControls2
+         model)
 
-target_include_directories(mainwindow PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(editor PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
