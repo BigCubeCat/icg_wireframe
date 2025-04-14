@@ -1,0 +1,47 @@
+<RCC>
+  <qresource prefix="assets">
+    <file>assets/tool_icons_16px/bucket_fill.png</file>
+    <file>assets/tool_icons_16px/pencil.png</file>
+    <file>assets/tool_icons_16px/camera.png</file>
+    <file>assets/tool_icons_16px/magnifying_glass.png</file>
+    <file>assets/tool_icons_16px/marquee.png</file>
+    <file>assets/tool_icons_16px/select.png</file>
+    <file>assets/tool_icons_16px/eraser.png</file>
+    <file>assets/tool_icons_16px/circle.png</file>
+    <file>assets/tool_icons_16px/rectangle.png</file>
+    <file>assets/tool_icons_16px/wand.png</file>
+    <file>assets/tool_icons_16px/lasso.png</file>
+    <file>assets/tool_icons_16px/poly_lasso.png</file>
+    <file>assets/tool_icons_16px/scalpel.png</file>
+    <file>assets/tool_icons_16px/polygon.png</file>
+    <file>assets/tool_icons_16px/grid.png</file>
+    <file>assets/tool_icons_16px/vertices.png</file>
+    <file>assets/tool_icons_16px/brush.png</file>
+    <file>assets/tool_icons_16px/brush_size.png</file>
+    <file>assets/tool_icons_16px/transparent.png</file>
+    <file>assets/tool_icons_16px/tolerance.png</file>
+    <file>assets/tool_icons_16px/orbit.png</file>
+    <file>assets/tool_icons_16px/pivot.png</file>
+    <file>assets/tool_icons_16px/mouse_left.png</file>
+    <file>assets/tool_icons_16px/mouse_right.png</file>
+    <file>assets/tool_icons_16px/mouse_middle.png</file>
+    <file>assets/tool_icons_16px/colon.png</file>
+    <file>assets/tool_icons_16px/move.png</file>
+    <file>assets/tool_icons_16px/wsad.png</file>
+    <file>assets/tool_icons_16px/walk.png</file>
+    <file>assets/tool_icons_16px/shift.png</file>
+    <file>assets/tool_icons_16px/history.png</file>
+    <file>assets/tool_icons_16px/stopwatch.png</file>
+    <file>assets/tool_icons_16px/bug.png</file>
+    <file>assets/tool_icons_16px/trashcan.png</file>
+    <file>assets/tool_icons_16px/ctrl.png</file>
+    <file>assets/tool_icons_16px/alt.png</file>
+    <file>assets/tool_icons_16px/maskpen.png</file>
+    <file>assets/tool_icons_16px/hSizeCursor.png</file>
+    <file>assets/tool_icons_16px/vSizeCursor.png</file>
+    <file>assets/tool_icons_16px/defaultCursor.png</file>
+    <file>assets/tool_icons_16px/folder.png</file>
+    <file>assets/tool_icons_16px/new.png</file>
+    <file>assets/tool_icons_16px/atlas.png</file>
+  </qresource>
+</RCC>
