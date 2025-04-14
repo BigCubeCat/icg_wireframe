@@ -1,5 +1,12 @@
 # Важно: включаем .ui файл в список исходников.
-qt_add_library(editor STATIC editor.cpp editor.hpp editor.ui)
+qt_add_library(
+  editor
+  STATIC
+  editor.cpp
+  editor.hpp
+  editor.ui
+  point_item.hpp
+  point_item.cpp)
 
 target_link_libraries(
   editor

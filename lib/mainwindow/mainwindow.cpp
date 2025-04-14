@@ -3,7 +3,7 @@
 #include "ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), m_ui(new Ui::MainWindow), m_editor(nullptr),
+    : QMainWindow(parent), m_editor(nullptr), m_ui(new Ui::MainWindow),
       m_tab1(), m_tab2() {
   m_ui->setupUi(this);
   m_tab2.addWidget(&m_editor);
