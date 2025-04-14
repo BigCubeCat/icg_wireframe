@@ -37,7 +37,6 @@ void Editor::addPoint(const QPointF& pos) {
 
 void Editor::handlePointDeleted(PointItem* point) {
     m_points.removeOne(point);
-    delete point;
     updateSpline();
 }
 
