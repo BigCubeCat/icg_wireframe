@@ -16,6 +16,11 @@ Editor::Editor(QWidget* parent, DataModel* model)
     m_ui->graphicsView->setRenderHint(QPainter::Antialiasing);
     m_ui->graphicsView->viewport()->installEventFilter(this);
     m_ui->graphicsView->setScene(&m_scene);
+
+    connect(m_ui->mSpinBox, &QSpinBox::valueChanged, m_data, &DataModel::set_m);
+    connect(m_ui->nSpinBox, &QSpinBox::valueChanged, m_data, &DataModel::set_n);
+    connect(m_ui->m1SpinBox, &QSpinBox::valueChanged, m_data,
+            &DataModel::set_m1);
 }
 
 Editor::~Editor() {
@@ -39,6 +44,7 @@ void Editor::addPoint(const QPointF& pos) {
 void Editor::handlePointDeleted(PointItem* point) {
     m_points.removeOne(point);
     updateSpline();
+    k_updated();
 }
 
 void Editor::updateSpline() {
@@ -68,5 +74,12 @@ bool Editor::eventFilter(QObject* obj, QEvent* event) {
             }
         }
     }
+    k_updated();
     return QWidget::eventFilter(obj, event);
+}
+
+void Editor::k_updated() {
+    auto k = m_points.size();
+    m_ui->kSpinBox->setValue(k);
+    m_ui->applyButton->setEnabled(k >= 4);
 }

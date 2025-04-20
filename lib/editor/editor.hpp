@@ -20,12 +20,13 @@ class Editor : public QWidget {
     Ui::Editor* m_ui;
     DataModel* m_data;
 
-    void setup_axes();
-
     QGraphicsScene m_scene;
     std::vector<std::pair<double, double>> m_spline_points;
     QList<PointItem*> m_points;
     QList<QGraphicsItem*> m_spline_segments;
+
+    void setup_axes();
+    void k_updated();
 
    public:
     explicit Editor(QWidget* parent, DataModel* model);
