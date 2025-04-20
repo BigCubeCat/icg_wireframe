@@ -21,9 +21,9 @@ class Editor : public QWidget {
     DataModel* m_data;
 
     QGraphicsScene m_scene;
-    std::vector<std::pair<double, double>> m_spline_points;
     QList<PointItem*> m_points;
     QList<QGraphicsItem*> m_spline_segments;
+    QList<QGraphicsItem*> m_spline;
 
     void setup_axes();
     void k_updated();
@@ -37,4 +37,6 @@ class Editor : public QWidget {
     void addPoint(const QPointF& pos);
     void updateSpline();
     void handlePointDeleted(PointItem* point);
+    void apply();
+    void normalize();
 };

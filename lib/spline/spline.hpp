@@ -10,10 +10,10 @@ class BSpline {
     Eigen::Matrix4d m_matrix_m;
     std::vector<double> m_points_u;
     std::vector<double> m_points_v;
-    size_t m_count_points;                   // K
-    size_t m_count_segmens;                  // N
-    size_t m_count_edges;                    // M
-    size_t m_count_edges_between_neighbors;  // M1
+    size_t m_count_points = 0;                   // K
+    size_t m_count_segmens = 2;                  // N
+    size_t m_count_edges = 1;                    // M
+    size_t m_count_edges_between_neighbors = 1;  // M1
 
    public:
     explicit BSpline();

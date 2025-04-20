@@ -3,7 +3,7 @@
 #include <array>
 
 struct Point {
-    std::array<double, 2> m_data;
+    std::array<double, 2> m_data{0, 0};
     Point() = default;
     Point(double x, double y) {
         m_data[0] = x;

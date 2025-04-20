@@ -1,8 +1,10 @@
 #include "spline.hpp"
 
+#include <cstddef>
 #include <eigen3/Eigen/Dense>
 
 #include <array>
+#include <iostream>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -27,17 +29,21 @@ BSpline::BSpline() : m_matrix_m(kM.data()) {
 };
 
 std::vector<Point> BSpline::operator()() {
-    std::vector<Point> spline_points(m_count_segmens - 3);
-    auto step = 1 / m_count_segmens;
+    std::cout << m_count_points << " " << m_count_segmens << std::endl;
+    std::vector<Point> spline_points;
+    spline_points.reserve(m_count_points);
+    double step = 1.0 / static_cast<double>(m_count_segmens);
 
     Eigen::Matrix<double, 1, 4> t_vector;
 
     for (size_t i = 1; i < m_count_points - 2; ++i) {
-        auto* u = m_points_u.data() + (i - 1);
-        auto* v = m_points_v.data() + (i - 1);
+        double* u = m_points_u.data() + static_cast<ptrdiff_t>(i - 1);
+        double* v = m_points_v.data() + static_cast<ptrdiff_t>(i - 1);
 
         Eigen::Map<Eigen::Vector4d> u_vector(u);
         Eigen::Map<Eigen::Vector4d> v_vector(v);
+        std::cout << "u = " << u_vector(0) << " " << u_vector(1) << " "
+                  << u_vector(2) << " " << u_vector(3) << std::endl;
 
         auto tmp_u = m_matrix_m * u_vector;
         auto tmp_v = m_matrix_m * v_vector;
@@ -45,8 +51,8 @@ std::vector<Point> BSpline::operator()() {
         double t = 0.0;
         for (size_t k = 0; k <= m_count_segmens; ++k) {
             get_t_vector(t_vector, t);
-            spline_points[k].set_x((t_vector * tmp_u).coeff(0));
-            spline_points[k].set_y((t_vector * tmp_v).coeff(0));
+            spline_points.emplace_back((t_vector * tmp_u).coeff(0),
+                                       (t_vector * tmp_v).coeff(0));
             t = k * step;
         }
     }

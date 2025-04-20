@@ -9,10 +9,15 @@ class DataModel : public QObject {
     Q_OBJECT
    public:
     explicit DataModel(QObject* parent = nullptr) : QObject(parent) {}
+    void set_points(std::vector<double> u, std::vector<double> v);
+    std::vector<Point> spline() const { return m_spline_points; };
+
    signals:
     void n_changed(int n);
     void m_changed(int m);
     void m1_changed(int m1);
+
+    void redraw_spline();
 
    private:
     int m_n = 0;
