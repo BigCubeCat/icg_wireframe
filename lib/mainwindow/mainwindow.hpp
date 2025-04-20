@@ -1,10 +1,11 @@
 #pragma once
 
 #include "editor.hpp"
+#include "model.hpp"
 
+#include <qboxlayout.h>
 #include <QActionGroup>
 #include <QMainWindow>
-#include <qboxlayout.h>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -13,18 +14,19 @@ class MainWindow;
 QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow {
-  Q_OBJECT
+    Q_OBJECT
 
-public:
-  explicit MainWindow(QWidget *parent);
-  ~MainWindow() override;
+   public:
+    explicit MainWindow(QWidget* parent);
+    ~MainWindow() override;
 
-private:
-  Editor m_editor;
-  Ui::MainWindow *m_ui;
+   private:
+    DataModel m_model;
+    Editor m_editor;
+    Ui::MainWindow* m_ui;
 
-  QHBoxLayout m_tab1;
-  QHBoxLayout m_tab2;
+    QHBoxLayout m_tab1;
+    QHBoxLayout m_tab2;
 
-  void connectSlots();
+    void connectSlots();
 };

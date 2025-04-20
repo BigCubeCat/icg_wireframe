@@ -5,6 +5,7 @@
 #include <QActionGroup>
 #include <QWidget>
 #include <utility>
+#include "model.hpp"
 #include "point_item.hpp"
 
 QT_BEGIN_NAMESPACE
@@ -17,6 +18,8 @@ class Editor : public QWidget {
     Q_OBJECT
    private:
     Ui::Editor* m_ui;
+    DataModel* m_data;
+
     void setup_axes();
 
     QGraphicsScene m_scene;
@@ -25,7 +28,7 @@ class Editor : public QWidget {
     QList<QGraphicsItem*> m_spline_segments;
 
    public:
-    explicit Editor(QWidget* parent);
+    explicit Editor(QWidget* parent, DataModel* model);
     ~Editor() override;
     bool eventFilter(QObject* obj, QEvent* event) override;
 

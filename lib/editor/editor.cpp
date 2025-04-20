@@ -5,7 +5,8 @@
 
 #include "ui_editor.h"
 
-Editor::Editor(QWidget* parent) : QWidget(parent), m_ui(new Ui::Editor) {
+Editor::Editor(QWidget* parent, DataModel* model)
+    : QWidget(parent), m_ui(new Ui::Editor), m_data(model) {
     m_ui->setupUi(this);
 
     m_scene.setSceneRect(-100, -100, 200, 200);
@@ -22,8 +23,8 @@ Editor::~Editor() {
 }
 
 void Editor::setup_axes() {
-    m_scene.addLine(-1000, 0, 1000, 0, QPen(Qt::gray));
-    m_scene.addLine(0, -1000, 0, 1000, QPen(Qt::gray));
+    m_scene.addLine(-1000, 0, 1000, 0, QPen(Qt::green));
+    m_scene.addLine(0, -1000, 0, 1000, QPen(Qt::green));
 }
 
 void Editor::addPoint(const QPointF& pos) {
