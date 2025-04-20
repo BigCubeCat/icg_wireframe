@@ -85,10 +85,11 @@ void Editor::updateSpline() {
     const auto k1 = static_cast<int>(spline_points.size());
     for (int i = 1; i < k1; ++i) {
         auto p1 = spline_points[i - 1];
+        qDebug() << "(" << p1.x() << "," << p1.y() << ")";
         auto p2 = spline_points[i];
         auto* line = m_scene.addLine(p1.x() * kViewSize, p1.y() * kViewSize,
                                      p2.x() * kViewSize, p2.y() * kViewSize,
-                                     QPen(Qt::darkRed, 2));
+                                     QPen(Qt::red, 5));
         m_spline.append(line);
     }
 }
@@ -143,11 +144,12 @@ void Editor::normalize() {
     }
     const auto width = (maximum_x - minimum_x) / 2;
     const auto height = (maximum_y - minimum_y) / 2;
+    const auto size = std::max(width, height);
     for (int i = 0; i < k; ++i) {
-        m_points[i]->setX(((m_points[i]->x() - minimum_x) / width * kViewSize) -
+        m_points[i]->setX(((m_points[i]->x() - minimum_x) / size * kViewSize) -
                           kViewSize);
-        m_points[i]->setY(
-            ((m_points[i]->y() - minimum_y) / height * kViewSize) - kViewSize);
+        m_points[i]->setY(((m_points[i]->y() - minimum_y) / size * kViewSize) -
+                          kViewSize);
     }
     updateSpline();
 }
