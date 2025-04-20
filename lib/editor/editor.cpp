@@ -6,11 +6,15 @@
 
 #include "ui_editor.h"
 
+const int kViewSize = 100;
+const float kScl = 1.1;
+
 Editor::Editor(QWidget* parent, DataModel* model)
     : QWidget(parent), m_ui(new Ui::Editor), m_data(model) {
     m_ui->setupUi(this);
 
-    m_scene.setSceneRect(-100, -100, 200, 200);
+    m_scene.setSceneRect(-kScl * kViewSize, -kScl * kViewSize,
+                         kScl * 2 * kViewSize, kScl * 2 * kViewSize);
     setup_axes();
 
     // Обработка кликов
@@ -26,6 +30,8 @@ Editor::Editor(QWidget* parent, DataModel* model)
     connect(m_data, &DataModel::redraw_spline, this, &Editor::updateSpline);
 
     connect(m_ui->applyButton, &QPushButton::clicked, this, &Editor::apply);
+    connect(m_ui->normalizeButton, &QPushButton::clicked, this,
+            &Editor::normalize);
 }
 
 Editor::~Editor() {
@@ -35,6 +41,14 @@ Editor::~Editor() {
 void Editor::setup_axes() {
     m_scene.addLine(-1000, 0, 1000, 0, QPen(Qt::green));
     m_scene.addLine(0, -1000, 0, 1000, QPen(Qt::green));
+    m_scene.addLine(kViewSize, -kViewSize, kViewSize, kViewSize,
+                    QPen(Qt::black));
+    m_scene.addLine(-kViewSize, -kViewSize, -kViewSize, kViewSize,
+                    QPen(Qt::black));
+    m_scene.addLine(-kViewSize, kViewSize, kViewSize, kViewSize,
+                    QPen(Qt::black));
+    m_scene.addLine(-kViewSize, -kViewSize, kViewSize, -kViewSize,
+                    QPen(Qt::black));
 }
 
 void Editor::addPoint(const QPointF& pos) {
@@ -69,12 +83,12 @@ void Editor::updateSpline() {
     }
     const auto spline_points = m_data->spline();
     const auto k1 = static_cast<int>(spline_points.size());
-    qDebug() << "k1=" << k1;
     for (int i = 1; i < k1; ++i) {
         auto p1 = spline_points[i - 1];
         auto p2 = spline_points[i];
-        auto* line =
-            m_scene.addLine(p1.x(), p1.y(), p2.x(), p2.y(), QPen(Qt::red, 2));
+        auto* line = m_scene.addLine(p1.x() * kViewSize, p1.y() * kViewSize,
+                                     p2.x() * kViewSize, p2.y() * kViewSize,
+                                     QPen(Qt::darkRed, 2));
         m_spline.append(line);
     }
 }
@@ -106,11 +120,34 @@ void Editor::apply() {
     std::vector<double> v(k);
     for (int i = 0; i < k; ++i) {
         QPointF point = m_points[i]->pos();
-        u[i] = point.x();
-        v[i] = point.y();
+        u[i] = point.x() / kViewSize;
+        v[i] = point.y() / kViewSize;
     }
-    qDebug() << "u.size = " << u.size();
     m_data->set_points(std::move(u), std::move(v));
 }
 
-void Editor::normalize() {}
+void Editor::normalize() {
+    int maximum_x = -2 * kViewSize;
+    int minimum_x = 2 * kViewSize;
+    int maximum_y = -2 * kViewSize;
+    int minimum_y = 2 * kViewSize;
+    const auto k = m_points.size();
+    for (int i = 0; i < k; ++i) {
+        QPointF point = m_points[i]->pos();
+        auto x = static_cast<int>(point.x());
+        auto y = static_cast<int>(point.y());
+        minimum_x = std::min(minimum_x, x);
+        minimum_y = std::min(minimum_y, y);
+        maximum_x = std::max(maximum_x, x);
+        maximum_y = std::max(maximum_y, y);
+    }
+    const auto width = (maximum_x - minimum_x) / 2;
+    const auto height = (maximum_y - minimum_y) / 2;
+    for (int i = 0; i < k; ++i) {
+        m_points[i]->setX(((m_points[i]->x() - minimum_x) / width * kViewSize) -
+                          kViewSize);
+        m_points[i]->setY(
+            ((m_points[i]->y() - minimum_y) / height * kViewSize) - kViewSize);
+    }
+    updateSpline();
+}

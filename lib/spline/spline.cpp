@@ -29,7 +29,6 @@ BSpline::BSpline() : m_matrix_m(kM.data()) {
 };
 
 std::vector<Point> BSpline::operator()() {
-    std::cout << m_count_points << " " << m_count_segmens << std::endl;
     std::vector<Point> spline_points;
     spline_points.reserve(m_count_points);
     double step = 1.0 / static_cast<double>(m_count_segmens);
@@ -42,8 +41,6 @@ std::vector<Point> BSpline::operator()() {
 
         Eigen::Map<Eigen::Vector4d> u_vector(u);
         Eigen::Map<Eigen::Vector4d> v_vector(v);
-        std::cout << "u = " << u_vector(0) << " " << u_vector(1) << " "
-                  << u_vector(2) << " " << u_vector(3) << std::endl;
 
         auto tmp_u = m_matrix_m * u_vector;
         auto tmp_v = m_matrix_m * v_vector;
