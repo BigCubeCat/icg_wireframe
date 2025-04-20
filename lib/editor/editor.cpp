@@ -8,7 +8,7 @@
 Editor::Editor(QWidget* parent) : QWidget(parent), m_ui(new Ui::Editor) {
     m_ui->setupUi(this);
 
-    m_scene.setSceneRect(-100, -100, 100, 100);
+    m_scene.setSceneRect(-100, -100, 200, 200);
     setup_axes();
 
     // Обработка кликов

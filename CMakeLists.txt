@@ -7,6 +7,7 @@ set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
+find_package(Eigen3 REQUIRED)
 find_package(
   Qt6 6.5 REQUIRED
   COMPONENTS Core
@@ -42,6 +43,7 @@ target_link_libraries(
           Qt6::Quick
           Qt6::QuickWidgets
           Qt6::QuickControls2
+          splinelib
           mainwindow)
 
 include(GNUInstallDirs)
@@ -59,3 +61,4 @@ install(SCRIPT ${deploy_script})
 add_subdirectory(lib/editor)
 add_subdirectory(lib/model)
 add_subdirectory(lib/mainwindow)
+add_subdirectory(lib/spline)

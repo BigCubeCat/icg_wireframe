@@ -9,7 +9,9 @@ target_link_libraries(
          Qt6::Qml
          Qt6::Quick
          Qt6::QuickWidgets
+         ${EIGEN3_INCLUDE_DIR}
          model
-         editor)
+         editor
+         splinelib)
 
 target_include_directories(mainwindow PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

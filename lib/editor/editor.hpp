@@ -4,6 +4,7 @@
 #include <qgraphicsscene.h>
 #include <QActionGroup>
 #include <QWidget>
+#include <utility>
 #include "point_item.hpp"
 
 QT_BEGIN_NAMESPACE
@@ -19,6 +20,7 @@ class Editor : public QWidget {
     void setup_axes();
 
     QGraphicsScene m_scene;
+    std::vector<std::pair<double, double>> m_spline_points;
     QList<PointItem*> m_points;
     QList<QGraphicsItem*> m_spline_segments;
 
