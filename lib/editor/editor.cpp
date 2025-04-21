@@ -10,9 +10,9 @@
 const int kViewSize = 100;
 const float kScl = 1.1;
 
-const QPen kSplinePen = QPen(Qt::red, 2);
+const QPen kSplinePen = QPen(Qt::red, 3);
 const QPen kAxisPen = QPen(Qt::black);
-const QPen kDotPen = QPen(Qt::green);
+const QPen kDotPen = QPen(Qt::green, 2);
 
 Editor::Editor(QWidget* parent, DataModel* model)
     : QWidget(parent), m_ui(new Ui::Editor), m_view(this), m_data(model) {

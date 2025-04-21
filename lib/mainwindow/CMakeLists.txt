@@ -12,6 +12,7 @@ target_link_libraries(
          ${EIGEN3_INCLUDE_DIR}
          model
          editor
+         canvas
          splinelib)
 
 target_include_directories(mainwindow PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

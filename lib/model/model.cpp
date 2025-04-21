@@ -5,6 +5,7 @@ void DataModel::set_n(int value) {
     if (m_n != value) {
         m_n = value;
         m_spline.set_count_segmens(m_n);
+        m_spline();
         emit n_changed(m_n);
         emit redraw_spline();
     }
@@ -28,6 +29,7 @@ void DataModel::set_m1(int value) {
 
 void DataModel::set_points(std::vector<double> u, std::vector<double> v) {
     m_spline.set_points(std::move(u), std::move(v));
-    m_spline_points = m_spline();
+    m_spline();
+    m_spline_points = m_spline.spline_points();
     emit redraw_spline();
 }

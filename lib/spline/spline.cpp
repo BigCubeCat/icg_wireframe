@@ -25,10 +25,12 @@ BSpline::BSpline() {
     std::cout << m_matrix_m << std::endl;
 };
 
-std::vector<Point> BSpline::operator()() {
-    std::vector<Point> spline_points;
-    std::cout << "count points = " << m_count_points << std::endl;
-    spline_points.reserve(m_count_points);
+std::vector<Point> BSpline::spline_points() {
+    return m_spline_points;
+};
+void BSpline::operator()() {
+    m_spline_points.clear();
+    m_spline_points.reserve(m_count_points);
     double step = 1.0 / static_cast<double>(m_count_segmens);
 
     Eigen::Matrix<double, 1, 4> t_vector;
@@ -43,11 +45,11 @@ std::vector<Point> BSpline::operator()() {
         for (size_t k = 0; k <= m_count_segmens; ++k) {
             double t = step * k;
             get_t_vector(t_vector, t);
-            spline_points.emplace_back((t_vector * tmp_u).coeff(0) / 6,
-                                       (t_vector * tmp_v).coeff(0) / 6);
+            auto x = (t_vector * tmp_u).coeff(0) / 6;
+            auto y = (t_vector * tmp_v).coeff(0) / 6;
+            m_spline_points.emplace_back(x, y);
         }
     }
-    return spline_points;
 }
 
 void BSpline::set_points(std::vector<double> u, std::vector<double> v) {

@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 #include "eigen3/Eigen/Dense"
 #include "point.hpp"
 
@@ -15,10 +16,14 @@ class BSpline {
     size_t m_count_edges = 1;                    // M
     size_t m_count_edges_between_neighbors = 1;  // M1
 
+    std::vector<Point> m_spline_points;
+
    public:
     explicit BSpline();
 
-    std::vector<Point> operator()();
+    std::vector<Point> spline_points();
+
+    void operator()();
 
     void set_points(std::vector<double> u, std::vector<double> v);
 

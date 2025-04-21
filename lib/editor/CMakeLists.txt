@@ -1,4 +1,3 @@
-# Важно: включаем .ui файл в список исходников.
 qt_add_library(
   editor
   STATIC

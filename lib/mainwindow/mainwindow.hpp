@@ -1,5 +1,6 @@
 #pragma once
 
+#include "canvas.hpp"
 #include "editor.hpp"
 #include "model.hpp"
 
@@ -23,6 +24,7 @@ class MainWindow : public QMainWindow {
    private:
     DataModel m_model;
     Editor m_editor;
+    Canvas m_cavnas;
     Ui::MainWindow* m_ui;
 
     QHBoxLayout m_tab1;
