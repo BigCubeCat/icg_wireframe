@@ -12,6 +12,16 @@ class DataModel : public QObject {
     void set_points(std::vector<double> u, std::vector<double> v);
     std::vector<Point> spline() const { return m_spline_points; };
 
+    size_t n() const { return m_n; }
+
+    size_t m() const { return m_m; }
+
+    size_t m1() const { return m_m1; }
+
+    std::pair<std::vector<double>, std::vector<double>> points() {
+        return m_spline.points();
+    }
+
    signals:
     void n_changed(int n);
     void m_changed(int m);

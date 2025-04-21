@@ -1,4 +1,5 @@
 #pragma once
+#include <utility>
 #include <vector>
 #include "eigen3/Eigen/Dense"
 #include "point.hpp"
@@ -11,15 +12,21 @@ class BSpline {
     Eigen::Matrix4d m_matrix_m;
     std::vector<double> m_points_u;
     std::vector<double> m_points_v;
+
     size_t m_count_points = 0;                   // K
     size_t m_count_segmens = 2;                  // N
     size_t m_count_edges = 1;                    // M
     size_t m_count_edges_between_neighbors = 1;  // M1
 
     std::vector<Point> m_spline_points;
+    std::vector<double> m_x_i;
+    std::vector<double> m_y_i;
+    std::vector<double> m_z_i;
 
    public:
     explicit BSpline();
+
+    std::pair<std::vector<double>, std::vector<double>> points();
 
     std::vector<Point> spline_points();
 

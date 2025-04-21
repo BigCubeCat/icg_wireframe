@@ -28,9 +28,15 @@ BSpline::BSpline() {
 std::vector<Point> BSpline::spline_points() {
     return m_spline_points;
 };
+
 void BSpline::operator()() {
     m_spline_points.clear();
-    m_spline_points.reserve(m_count_points);
+    m_spline_points.reserve(m_count_points * m_count_segmens);
+
+    m_x_i.reserve(m_count_points * m_count_segmens);
+    m_y_i.reserve(m_count_points * m_count_segmens);
+    m_z_i.reserve(m_count_points * m_count_segmens);
+
     double step = 1.0 / static_cast<double>(m_count_segmens);
 
     Eigen::Matrix<double, 1, 4> t_vector;
@@ -48,6 +54,9 @@ void BSpline::operator()() {
             auto x = (t_vector * tmp_u).coeff(0) / 6;
             auto y = (t_vector * tmp_v).coeff(0) / 6;
             m_spline_points.emplace_back(x, y);
+            m_x_i.push_back(x);
+            m_y_i.push_back(y);
+            m_z_i.push_back(x);
         }
     }
 }
@@ -71,4 +80,8 @@ void BSpline::set_count_edges(size_t m) {
 
 void BSpline::set_count_edges_neigh(size_t m1) {
     m_count_edges_between_neighbors = m1;
+}
+
+std::pair<std::vector<double>, std::vector<double>> BSpline::points() {
+    return {m_points_u, m_points_v};
 }

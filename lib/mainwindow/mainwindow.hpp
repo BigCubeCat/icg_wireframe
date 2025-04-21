@@ -2,6 +2,7 @@
 
 #include "canvas.hpp"
 #include "editor.hpp"
+#include "fileprocessor.hpp"
 #include "model.hpp"
 
 #include <qboxlayout.h>
@@ -16,6 +17,10 @@ QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
+   private slots:
+    void open();
+    void save();
+    void save_as();
 
    public:
     explicit MainWindow(QWidget* parent);
@@ -25,6 +30,7 @@ class MainWindow : public QMainWindow {
     DataModel m_model;
     Editor m_editor;
     Canvas m_cavnas;
+    FileProcessor m_fp;
     Ui::MainWindow* m_ui;
 
     QHBoxLayout m_tab1;
