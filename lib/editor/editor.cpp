@@ -1,5 +1,6 @@
 #include "editor.hpp"
 #include <qlogging.h>
+#include <qnamespace.h>
 
 #include <QMouseEvent>
 #include <vector>
@@ -9,18 +10,23 @@
 const int kViewSize = 100;
 const float kScl = 1.1;
 
+const QPen kSplinePen = QPen(Qt::red, 2);
+const QPen kAxisPen = QPen(Qt::black);
+const QPen kDotPen = QPen(Qt::green);
+
 Editor::Editor(QWidget* parent, DataModel* model)
-    : QWidget(parent), m_ui(new Ui::Editor), m_data(model) {
+    : QWidget(parent), m_ui(new Ui::Editor), m_view(this), m_data(model) {
     m_ui->setupUi(this);
+    m_ui->layout->addWidget(&m_view);
 
     m_scene.setSceneRect(-kScl * kViewSize, -kScl * kViewSize,
                          kScl * 2 * kViewSize, kScl * 2 * kViewSize);
     setup_axes();
 
     // Обработка кликов
-    m_ui->graphicsView->setRenderHint(QPainter::Antialiasing);
-    m_ui->graphicsView->viewport()->installEventFilter(this);
-    m_ui->graphicsView->setScene(&m_scene);
+    m_view.setRenderHint(QPainter::Antialiasing);
+    m_view.viewport()->installEventFilter(this);
+    m_view.setScene(&m_scene);
 
     connect(m_ui->mSpinBox, &QSpinBox::valueChanged, m_data, &DataModel::set_m);
     connect(m_ui->nSpinBox, &QSpinBox::valueChanged, m_data, &DataModel::set_n);
@@ -39,16 +45,12 @@ Editor::~Editor() {
 }
 
 void Editor::setup_axes() {
-    m_scene.addLine(-1000, 0, 1000, 0, QPen(Qt::green));
-    m_scene.addLine(0, -1000, 0, 1000, QPen(Qt::green));
-    m_scene.addLine(kViewSize, -kViewSize, kViewSize, kViewSize,
-                    QPen(Qt::black));
-    m_scene.addLine(-kViewSize, -kViewSize, -kViewSize, kViewSize,
-                    QPen(Qt::black));
-    m_scene.addLine(-kViewSize, kViewSize, kViewSize, kViewSize,
-                    QPen(Qt::black));
-    m_scene.addLine(-kViewSize, -kViewSize, kViewSize, -kViewSize,
-                    QPen(Qt::black));
+    m_scene.addLine(-1000, 0, 1000, 0, kAxisPen);
+    m_scene.addLine(0, -1000, 0, 1000, kAxisPen);
+    m_scene.addLine(kViewSize, -kViewSize, kViewSize, kViewSize, kAxisPen);
+    m_scene.addLine(-kViewSize, -kViewSize, -kViewSize, kViewSize, kAxisPen);
+    m_scene.addLine(-kViewSize, kViewSize, kViewSize, kViewSize, kAxisPen);
+    m_scene.addLine(-kViewSize, -kViewSize, kViewSize, -kViewSize, kAxisPen);
 }
 
 void Editor::addPoint(const QPointF& pos) {
@@ -77,29 +79,26 @@ void Editor::updateSpline() {
     for (int i = 1; i < k; ++i) {
         QPointF p1 = m_points[i - 1]->pos();
         QPointF p2 = m_points[i]->pos();
-        auto* line = m_scene.addLine(p1.x(), p1.y(), p2.x(), p2.y(),
-                                     QPen(Qt::darkCyan, 2));
+        auto* line = m_scene.addLine(p1.x(), p1.y(), p2.x(), p2.y(), kDotPen);
         m_spline_segments.append(line);
     }
     const auto spline_points = m_data->spline();
     const auto k1 = static_cast<int>(spline_points.size());
     for (int i = 1; i < k1; ++i) {
         auto p1 = spline_points[i - 1];
-        qDebug() << "(" << p1.x() << "," << p1.y() << ")";
         auto p2 = spline_points[i];
-        auto* line = m_scene.addLine(p1.x() * kViewSize, p1.y() * kViewSize,
-                                     p2.x() * kViewSize, p2.y() * kViewSize,
-                                     QPen(Qt::red, 5));
+        auto* line =
+            m_scene.addLine(p1.x() * kViewSize, p1.y() * kViewSize,
+                            p2.x() * kViewSize, p2.y() * kViewSize, kSplinePen);
         m_spline.append(line);
     }
 }
 
 bool Editor::eventFilter(QObject* obj, QEvent* event) {
-    if (event->type() == QEvent::MouseButtonPress &&
-        obj == m_ui->graphicsView->viewport()) {
+    if (event->type() == QEvent::MouseButtonPress && obj == m_view.viewport()) {
         auto* mouse_event = static_cast<QMouseEvent*>(event);
         if (mouse_event->button() == Qt::LeftButton) {
-            auto scene_pos = m_ui->graphicsView->mapToScene(mouse_event->pos());
+            auto scene_pos = m_view.mapToScene(mouse_event->pos());
             if (!m_scene.itemAt(scene_pos, QTransform())) {
                 addPoint(scene_pos);
             }

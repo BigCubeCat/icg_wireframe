@@ -4,9 +4,9 @@
 #include <qgraphicsscene.h>
 #include <QActionGroup>
 #include <QWidget>
-#include <utility>
 #include "model.hpp"
 #include "point_item.hpp"
+#include "scalable_graphics_view.hpp"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -18,6 +18,7 @@ class Editor : public QWidget {
     Q_OBJECT
    private:
     Ui::Editor* m_ui;
+    ScalableGraphicsView m_view;
     DataModel* m_data;
 
     QGraphicsScene m_scene;
