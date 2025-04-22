@@ -44,11 +44,6 @@ void FileProcessor::write_file(const std::string& filename) {
     auto points = m_data->points();
     auto k = points.first.size();
 
-    qDebug() << n;
-    qDebug() << m;
-    qDebug() << m1;
-    qDebug() << k;
-
     file.write(reinterpret_cast<char*>(&n), sizeof(int16_t));
     file.write(reinterpret_cast<char*>(&m), sizeof(int16_t));
     file.write(reinterpret_cast<char*>(&m1), sizeof(int16_t));

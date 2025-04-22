@@ -1,8 +1,9 @@
 #pragma once
 
+#include <eigen3/Eigen/Dense>
+
 #include <QPainter>
 #include <QWidget>
-#include <eigen3/Eigen/Dense>
 #include "model.hpp"
 
 struct Vertex3D {
