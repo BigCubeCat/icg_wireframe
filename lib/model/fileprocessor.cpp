@@ -30,10 +30,10 @@ void FileProcessor::read_file(const std::string& filename) {
     file.read(reinterpret_cast<char*>(u.data()), k * sizeof(double));
     file.read(reinterpret_cast<char*>(v.data()), k * sizeof(double));
 
-    m_data->set_n(n);
     m_data->set_m(m);
     m_data->set_m1(m1);
     m_data->set_points(u, v);
+    m_data->set_n(n);
 }
 
 void FileProcessor::write_file(const std::string& filename) {

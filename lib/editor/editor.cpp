@@ -1,6 +1,8 @@
 #include "editor.hpp"
+#include <qalgorithms.h>
 #include <qlogging.h>
 #include <qnamespace.h>
+#include <qpoint.h>
 
 #include <QMouseEvent>
 #include <vector>
@@ -151,4 +153,22 @@ void Editor::normalize() {
                           kViewSize);
     }
     updateSpline();
+}
+
+void Editor::open_spline() {
+    qDeleteAll(m_spline_segments);
+    qDeleteAll(m_spline);
+    m_spline_segments.clear();
+    m_spline.clear();
+    qDeleteAll(m_points);
+    m_points.clear();
+    auto points = m_data->points();
+    const auto k = points.first.size();
+    for (size_t i = 0; i < k; ++i) {
+        addPoint(
+            QPointF(points.first[i] * kViewSize, points.second[i] * kViewSize));
+    }
+    m_ui->nSpinBox->setValue(m_data->n());
+    m_ui->m1SpinBox->setValue(m_data->m1());
+    m_ui->mSpinBox->setValue(m_data->m());
 }

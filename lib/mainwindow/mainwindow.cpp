@@ -30,6 +30,7 @@ void MainWindow::connectSlots() {
 
 void MainWindow::open() {
     m_fp.open();
+    m_editor.open_spline();
 }
 
 void MainWindow::save() {

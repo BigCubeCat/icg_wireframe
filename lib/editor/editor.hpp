@@ -34,6 +34,8 @@ class Editor : public QWidget {
     ~Editor() override;
     bool eventFilter(QObject* obj, QEvent* event) override;
 
+    void open_spline();
+
    private slots:
     void addPoint(const QPointF& pos);
     void updateSpline();
