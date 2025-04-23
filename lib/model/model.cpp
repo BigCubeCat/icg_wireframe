@@ -7,6 +7,7 @@ void DataModel::set_n(int value) {
         m_n = value;
         m_spline.set_count_segmens(m_n);
         m_spline();
+        m_spline_points = m_spline.spline_points();
         emit n_changed(m_n);
         emit redraw_spline();
     }

@@ -47,7 +47,6 @@ Editor::Editor(QWidget* parent, DataModel* model)
     addPoint(QPointF(0 * kViewSize, 0.5 * kViewSize));
     addPoint(QPointF(0.75 * kViewSize, 0.25 * kViewSize));
     apply();
-    updateSpline();
 }
 
 Editor::~Editor() {
@@ -79,7 +78,7 @@ void Editor::addPoint(const QPointF& pos, bool update_spline) {
     auto* point = new PointItem(pos.x(), pos.y());
     m_scene.addItem(point);
     m_points.append(point);
-    connect(point, &PointItem::positionChanged, this, &Editor::updateSpline);
+    connect(point, &PointItem::positionChanged, this, &Editor::apply);
     connect(point, &PointItem::pointDeleted, this, &Editor::handlePointDeleted);
     if (update_spline)
         m_data->add_point(pos.x() / kViewSize, pos.y() / kViewSize);
@@ -151,6 +150,7 @@ void Editor::apply() {
         v[i] = point.y() / kViewSize;
     }
     m_data->set_points(std::move(u), std::move(v));
+    updateSpline();
 }
 
 void Editor::normalize() {
