@@ -23,6 +23,8 @@ class BSpline {
     std::vector<double> m_y_i;
     std::vector<double> m_z_i;
 
+    double m_step = 0.5;
+
    public:
     explicit BSpline();
 
@@ -30,7 +32,11 @@ class BSpline {
 
     std::vector<Point> spline_points();
 
+    /// полностью пересчитвыаем сплайн
     void operator()();
+
+    /// добавляем ОДНУ точку
+    void operator()(double x, double y);
 
     void set_points(std::vector<double> u, std::vector<double> v);
 

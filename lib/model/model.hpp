@@ -22,6 +22,8 @@ class DataModel : public QObject {
         return m_spline.points();
     }
 
+    void add_point(double x, double y);
+
    signals:
     void n_changed(int n);
     void m_changed(int m);

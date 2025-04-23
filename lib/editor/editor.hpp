@@ -37,7 +37,7 @@ class Editor : public QWidget {
     void open_spline();
 
    private slots:
-    void addPoint(const QPointF& pos);
+    void addPoint(const QPointF& pos, bool update_spline = false);
     void updateSpline();
     void handlePointDeleted(PointItem* point);
     void apply();

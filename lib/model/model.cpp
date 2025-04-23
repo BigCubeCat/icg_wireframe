@@ -1,5 +1,6 @@
 #include "model.hpp"
 #include <qdebug.h>
+#include <qtmetamacros.h>
 
 void DataModel::set_n(int value) {
     if (m_n != value) {
@@ -30,6 +31,12 @@ void DataModel::set_m1(int value) {
 void DataModel::set_points(std::vector<double> u, std::vector<double> v) {
     m_spline.set_points(std::move(u), std::move(v));
     m_spline();
+    m_spline_points = m_spline.spline_points();
+    emit redraw_spline();
+}
+
+void DataModel::add_point(double x, double y) {
+    m_spline(x, y);
     m_spline_points = m_spline.spline_points();
     emit redraw_spline();
 }

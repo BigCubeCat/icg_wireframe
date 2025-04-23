@@ -11,9 +11,11 @@
 
 const int kViewSize = 100;
 const float kScl = 1.1;
+const float kDx = 0.125;
+const float kDxHalf = 0.125 / 8;
 
 const QPen kSplinePen = QPen(Qt::red, 3);
-const QPen kAxisPen = QPen(Qt::black);
+const QPen kAxisPen = QPen(Qt::lightGray);
 const QPen kDotPen = QPen(Qt::green, 2);
 
 Editor::Editor(QWidget* parent, DataModel* model)
@@ -37,9 +39,15 @@ Editor::Editor(QWidget* parent, DataModel* model)
 
     connect(m_data, &DataModel::redraw_spline, this, &Editor::updateSpline);
 
-    connect(m_ui->applyButton, &QPushButton::clicked, this, &Editor::apply);
     connect(m_ui->normalizeButton, &QPushButton::clicked, this,
             &Editor::normalize);
+
+    addPoint(QPointF(-kViewSize, 0.25 * kViewSize));
+    addPoint(QPointF(0, 0));
+    addPoint(QPointF(0 * kViewSize, 0.5 * kViewSize));
+    addPoint(QPointF(0.75 * kViewSize, 0.25 * kViewSize));
+    apply();
+    updateSpline();
 }
 
 Editor::~Editor() {
@@ -53,19 +61,38 @@ void Editor::setup_axes() {
     m_scene.addLine(-kViewSize, -kViewSize, -kViewSize, kViewSize, kAxisPen);
     m_scene.addLine(-kViewSize, kViewSize, kViewSize, kViewSize, kAxisPen);
     m_scene.addLine(-kViewSize, -kViewSize, kViewSize, -kViewSize, kAxisPen);
+    for (int i = -80; i <= 80; ++i) {
+        const auto t = kViewSize * i * kDx;
+        m_scene.addLine(-kViewSize * kDxHalf, -t, kViewSize * kDxHalf, -t,
+                        kAxisPen);
+        m_scene.addLine(-kViewSize * kDxHalf, t, kViewSize * kDxHalf, t,
+                        kAxisPen);
+
+        m_scene.addLine(t, -kViewSize * kDxHalf, t, kViewSize * kDxHalf,
+                        kAxisPen);
+        m_scene.addLine(-t, -kViewSize * kDxHalf, -t, kViewSize * kDxHalf,
+                        kAxisPen);
+    }
 }
 
-void Editor::addPoint(const QPointF& pos) {
+void Editor::addPoint(const QPointF& pos, bool update_spline) {
     auto* point = new PointItem(pos.x(), pos.y());
     m_scene.addItem(point);
     m_points.append(point);
     connect(point, &PointItem::positionChanged, this, &Editor::updateSpline);
     connect(point, &PointItem::pointDeleted, this, &Editor::handlePointDeleted);
-    updateSpline();
+    if (update_spline)
+        m_data->add_point(pos.x() / kViewSize, pos.y() / kViewSize);
+    k_updated();
 }
 
 void Editor::handlePointDeleted(PointItem* point) {
+    if (m_points.size() == 4) {
+        return;
+    }
     m_points.removeOne(point);
+    delete point;
+    apply();
     updateSpline();
     k_updated();
 }
@@ -102,18 +129,16 @@ bool Editor::eventFilter(QObject* obj, QEvent* event) {
         if (mouse_event->button() == Qt::LeftButton) {
             auto scene_pos = m_view.mapToScene(mouse_event->pos());
             if (!m_scene.itemAt(scene_pos, QTransform())) {
-                addPoint(scene_pos);
+                addPoint(scene_pos, true);
             }
         }
     }
-    k_updated();
     return QWidget::eventFilter(obj, event);
 }
 
 void Editor::k_updated() {
     auto k = m_points.size();
     m_ui->kSpinBox->setValue(k);
-    m_ui->applyButton->setEnabled(k >= 4);
 }
 
 void Editor::apply() {
@@ -152,7 +177,7 @@ void Editor::normalize() {
         m_points[i]->setY(((m_points[i]->y() - minimum_y) / size * kViewSize) -
                           kViewSize);
     }
-    updateSpline();
+    apply();
 }
 
 void Editor::open_spline() {
@@ -171,4 +196,5 @@ void Editor::open_spline() {
     m_ui->nSpinBox->setValue(m_data->n());
     m_ui->m1SpinBox->setValue(m_data->m1());
     m_ui->mSpinBox->setValue(m_data->m());
+    updateSpline();
 }

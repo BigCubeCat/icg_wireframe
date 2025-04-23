@@ -29,15 +29,40 @@ std::vector<Point> BSpline::spline_points() {
     return m_spline_points;
 };
 
+void BSpline::operator()(double x, double y) {
+    m_points_u.push_back(x);
+    m_points_v.push_back(y);
+
+    double index = m_points_u.size() - 4;
+    Eigen::Map<Eigen::Vector4d> u_vector(m_points_u.data() +
+                                         static_cast<ptrdiff_t>(index));
+    Eigen::Map<Eigen::Vector4d> v_vector(m_points_v.data() +
+                                         static_cast<ptrdiff_t>(index));
+    Eigen::Matrix<double, 1, 4> t_vector;
+    auto tmp_u = m_matrix_m * u_vector;
+    auto tmp_v = m_matrix_m * v_vector;
+    for (size_t k = 0; k <= m_count_segmens; ++k) {
+        double t = m_step * k;
+        get_t_vector(t_vector, t);
+        auto x = (t_vector * tmp_u).coeff(0) / 6;
+        auto y = (t_vector * tmp_v).coeff(0) / 6;
+        m_spline_points.emplace_back(x, y);
+        m_x_i.push_back(x);
+        m_y_i.push_back(y);
+        m_z_i.push_back(x);
+    }
+}
+
 void BSpline::operator()() {
     m_spline_points.clear();
+    m_x_i.clear();
+    m_y_i.clear();
+    m_z_i.clear();
     m_spline_points.reserve(m_count_points * m_count_segmens);
 
     m_x_i.reserve(m_count_points * m_count_segmens);
     m_y_i.reserve(m_count_points * m_count_segmens);
     m_z_i.reserve(m_count_points * m_count_segmens);
-
-    double step = 1.0 / static_cast<double>(m_count_segmens);
 
     Eigen::Matrix<double, 1, 4> t_vector;
     for (size_t i = 1; i < m_count_points - 2; ++i) {
@@ -49,7 +74,7 @@ void BSpline::operator()() {
         auto tmp_v = m_matrix_m * v_vector;
 
         for (size_t k = 0; k <= m_count_segmens; ++k) {
-            double t = step * k;
+            double t = m_step * k;
             get_t_vector(t_vector, t);
             auto x = (t_vector * tmp_u).coeff(0) / 6;
             auto y = (t_vector * tmp_v).coeff(0) / 6;
@@ -72,6 +97,7 @@ void BSpline::set_points(std::vector<double> u, std::vector<double> v) {
 
 void BSpline::set_count_segmens(size_t n) {
     m_count_segmens = n;
+    m_step = 1.0 / static_cast<double>(m_count_segmens);
 }
 
 void BSpline::set_count_edges(size_t m) {

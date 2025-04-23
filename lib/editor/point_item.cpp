@@ -14,7 +14,6 @@ PointItem::PointItem(qreal x, qreal y, QGraphicsItem* parent)
 void PointItem::mousePressEvent(QGraphicsSceneMouseEvent* event) {
     if (event->button() == Qt::RightButton) {
         emit pointDeleted(this);
-        delete this;
     } else {
         QGraphicsEllipseItem::mousePressEvent(event);
     }
