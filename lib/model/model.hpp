@@ -10,7 +10,7 @@ class DataModel : public QObject {
    public:
     explicit DataModel(QObject* parent = nullptr) : QObject(parent) {}
     void set_points(std::vector<double> u, std::vector<double> v);
-    std::vector<Point> spline() const { return m_spline_points; };
+    std::vector<Point> spline_points() const { return m_spline_points; };
 
     size_t n() const { return m_n; }
 
@@ -24,6 +24,8 @@ class DataModel : public QObject {
 
     void add_point(double x, double y);
 
+    BSpline& spline() { return m_spline; }
+
    signals:
     void n_changed(int n);
     void m_changed(int m);
@@ -32,9 +34,9 @@ class DataModel : public QObject {
     void redraw_spline();
 
    private:
-    int m_n = 0;
-    int m_m = 0;
-    int m_m1 = 0;
+    int m_n = 2;
+    int m_m = 1;
+    int m_m1 = 1;
     std::vector<Point> m_spline_points;
 
     BSpline m_spline;

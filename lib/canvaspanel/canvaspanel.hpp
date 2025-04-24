@@ -14,7 +14,7 @@ QT_END_NAMESPACE
 class CanvasPanel : public QWidget {
     Q_OBJECT
    private:
-    Canvas* m_canvas;
+    Canvas m_canvas;
     DataModel* m_data;
     Grad m_gradient;
     Ui::CanvasPanel* m_ui;
@@ -22,7 +22,7 @@ class CanvasPanel : public QWidget {
     std::optional<QColor> ask_color(const QColor& old);
 
    public:
-    explicit CanvasPanel(QWidget* parent, Canvas* cnv, DataModel* model);
+    explicit CanvasPanel(QWidget* parent, DataModel* model);
     ~CanvasPanel() override;
 
    private slots:

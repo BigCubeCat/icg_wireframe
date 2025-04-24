@@ -110,7 +110,7 @@ void Editor::updateSpline() {
         auto* line = m_scene.addLine(p1.x(), p1.y(), p2.x(), p2.y(), kDotPen);
         m_spline_segments.append(line);
     }
-    const auto spline_points = m_data->spline();
+    const auto spline_points = m_data->spline_points();
     const auto k1 = static_cast<int>(spline_points.size());
     for (int i = 1; i < k1; ++i) {
         auto p1 = spline_points[i - 1];

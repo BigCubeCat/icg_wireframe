@@ -7,14 +7,14 @@
 
 #include "ui_canvaspanel.h"
 
-CanvasPanel::CanvasPanel(QWidget* parent, Canvas* cnv, DataModel* model)
+CanvasPanel::CanvasPanel(QWidget* parent, DataModel* model)
     : QWidget(parent),
-      m_canvas(cnv),
+      m_canvas(this, model),
       m_data(model),
       m_gradient(this),
       m_ui(new Ui::CanvasPanel) {
     m_ui->setupUi(this);
-    m_ui->layout->addWidget(m_canvas);
+    m_ui->layout->addWidget(&m_canvas);
     m_ui->wgt->addWidget(&m_gradient);
 
     connect(m_ui->pushButton_2, &QPushButton::clicked, this,
@@ -22,6 +22,9 @@ CanvasPanel::CanvasPanel(QWidget* parent, Canvas* cnv, DataModel* model)
 
     connect(m_ui->pushButton, &QPushButton::clicked, this,
             &CanvasPanel::on_bottom_clicked);
+
+    connect(m_data, &DataModel::redraw_spline, &m_canvas,
+            &Canvas::create_points);
 }
 
 CanvasPanel::~CanvasPanel() {

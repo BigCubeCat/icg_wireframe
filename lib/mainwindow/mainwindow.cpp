@@ -7,8 +7,7 @@
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
       m_editor(nullptr, &m_model),
-      m_cavnas(nullptr, &m_model),
-      m_canvas_panel(nullptr, &m_cavnas, &m_model),
+      m_canvas_panel(nullptr, &m_model),
       m_fp(&m_model),
       m_ui(new Ui::MainWindow) {
     m_ui->setupUi(this);

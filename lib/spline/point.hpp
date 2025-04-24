@@ -9,8 +9,8 @@ struct Point {
         m_data[0] = x;
         m_data[1] = y;
     }
-    double x() { return m_data[0]; }
-    double y() { return m_data[1]; }
+    double x() const { return m_data[0]; }
+    double y() const { return m_data[1]; }
     void set_x(double x) { m_data[0] = x; }
     void set_y(double y) { m_data[1] = y; }
 };

@@ -63,6 +63,12 @@ void BSpline::operator()() {
     m_x_i.reserve(m_count_points * m_count_segmens);
     m_y_i.reserve(m_count_points * m_count_segmens);
     m_z_i.reserve(m_count_points * m_count_segmens);
+    m_maximum = {0, 0, 0};
+    m_minimum = {
+        std::numeric_limits<double>::infinity(),
+        std::numeric_limits<double>::infinity(),
+        std::numeric_limits<double>::infinity(),
+    };
 
     Eigen::Matrix<double, 1, 4> t_vector;
     for (size_t i = 1; i < m_count_points - 2; ++i) {
@@ -79,6 +85,16 @@ void BSpline::operator()() {
             auto x = (t_vector * tmp_u).coeff(0) / 6;
             auto y = (t_vector * tmp_v).coeff(0) / 6;
             m_spline_points.emplace_back(x, y);
+            m_minimum = {
+                std::min(m_minimum[0], x),
+                std::min(m_minimum[1], y),
+                std::min(m_minimum[2], x),
+            };
+            m_maximum = {
+                std::max(m_maximum[0], x),
+                std::max(m_maximum[1], y),
+                std::max(m_maximum[2], x),
+            };
             m_x_i.push_back(x);
             m_y_i.push_back(y);
             m_z_i.push_back(x);
