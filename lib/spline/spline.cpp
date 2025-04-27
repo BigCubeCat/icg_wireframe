@@ -1,10 +1,9 @@
 #include "spline.hpp"
 
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <eigen3/Eigen/Dense>
-#include <iterator>
+#include <iostream>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -112,9 +111,11 @@ void BSpline::calc_figure(int m, int m1) {
     const auto size = m_spline_points.size();
     m_figure.clear();
     m_figure.reserve(size * m * m1);
+    m_edges.reserve((size * m * (m1 + 1)));
     for (size_t i = 0; i < size; ++i) {  // по точкам сплайна
         for (int j = 0; j < m; ++j) {
-            auto phi_angle = phi * i;
+            auto phi_angle = phi * j;
+            auto index = m_figure.size();
             m_figure.emplace_back(m_spline_points[i].y() * cos(phi_angle),
                                   m_spline_points[i].y() * sin(phi_angle),
                                   m_spline_points[i].x());
@@ -124,15 +125,21 @@ void BSpline::calc_figure(int m, int m1) {
                 m_figure.emplace_back(m_spline_points[i].y() * cos(theta_angle),
                                       m_spline_points[i].y() * sin(theta_angle),
                                       m_spline_points[i].x());
+                m_edges.emplace_back(index, index + 1);
+                index++;
             }
         }
     }
-    m_edges.reserve((size * m * (m1 + 1)));
-    for (size_t i = 0; i < size - 1; ++i) {  // точки сплайна
-        for (int j = 0; j < m; ++j) {
-            for (int k = 0; k < m1; ++k) {
-                m_edges.emplace_back(i * m * m1, (i + 1) * m * m1);
-            }
+    const auto mm = m * m1;
+    std::cout << size << std::endl;
+    for (size_t i = 0; i < size; ++i) {  // точки сплайна
+        auto index = i;
+        for (int j = 0; j < mm - 1; ++j) {
+            // m_edges.emplace_back(index, index++);
         }
+        // m_edges.emplace_back(index, i);
+    }
+    for (int j = 0; j < m; ++j) {
+        auto second = (j + 1) % m;
     }
 }
