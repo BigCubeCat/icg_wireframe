@@ -49,6 +49,8 @@ class BSpline {
     /// добавляем ОДНУ точку
     void operator()(double x, double y);
 
+    void calc_figure();
+
     void set_points(std::vector<double> u, std::vector<double> v);
 
     void set_count_segmens(size_t n);

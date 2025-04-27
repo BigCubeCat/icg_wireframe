@@ -1,9 +1,11 @@
 #include "spline.hpp"
 
+#include <algorithm>
 #include <cstddef>
 #include <eigen3/Eigen/Dense>
 
 #include <iostream>
+#include <iterator>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -22,7 +24,6 @@ void get_t_vector(Eigen::Matrix<double, 1, 4>& vec, double t) {
 
 BSpline::BSpline() {
     m_matrix_m << -1, 3, -3, 1, 3, -6, 3, 0, -3, 0, 3, 0, 1, 4, 1, 0;
-    std::cout << m_matrix_m << std::endl;
 };
 
 std::vector<Point> BSpline::spline_points() {
@@ -126,4 +127,19 @@ void BSpline::set_count_edges_neigh(size_t m1) {
 
 std::pair<std::vector<double>, std::vector<double>> BSpline::points() {
     return {m_points_u, m_points_v};
+}
+
+void BSpline::calc_figure() {
+    const auto size = m_x_i.size();
+    std::vector<double> figure_size;
+    std::transform(m_maximum.begin(), m_maximum.end(), m_minimum.begin(),
+                   std::back_inserter(figure_size), std::minus());
+    const double max_size =
+        *std::max_element(figure_size.begin(), figure_size.end()) / 2;
+    // производим нормализацию
+    for (size_t i = 0; i < size; ++i) {
+        m_x_i[i] = (m_x_i[i] / max_size);
+        m_y_i[i] = (m_y_i[i] / max_size);
+        m_z_i[i] = (m_z_i[i] / max_size);
+    }
 }

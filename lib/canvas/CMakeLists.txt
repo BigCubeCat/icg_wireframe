@@ -1,4 +1,5 @@
-qt_add_library(canvas STATIC canvas.cpp canvas.hpp)
+qt_add_library(canvas STATIC canvas.cpp canvas.hpp canvas_utils.cpp
+               canvas_utils.hpp)
 
 target_link_libraries(
   canvas

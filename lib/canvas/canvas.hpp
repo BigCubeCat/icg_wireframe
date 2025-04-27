@@ -5,6 +5,7 @@
 #include <QPainter>
 #include <QWidget>
 #include <vector>
+#include "canvas_utils.hpp"
 #include "model.hpp"
 
 struct Vertex3D {
@@ -16,35 +17,33 @@ class Canvas : public QWidget {
     Q_OBJECT
    public slots:
     void pallete_changed(const QColor& a, const QColor& b);
-    void create_points();
 
    private:
     DataModel* m_data;
 
-    Eigen::Matrix4d m_rotation;
-    Eigen::Matrix4d m_camera_translate;
-    Eigen::Matrix4d m_camera_perspective;
-    Eigen::Matrix4d m_translate;
-    Eigen::Matrix4d m_normalize;
+    double m_rotation_angle = 0;
 
-    std::vector<Eigen::Vector4d> m_figure_points;
-    std::vector<double> m_edges;
+    QColor m_farColor = Qt::red;
+    QColor m_nearColor = Qt::blue;
 
-    double m_near_clip = 5.0;
-    double m_rotation_angle = 5.0;
-
-    double m_sh;
-    double m_sw;
-
-    QColor m_far = Qt::blue;
-    QColor m_close = Qt::red;
+    bool m_is_draging = false;
+    QPoint m_begin_point;
+    QPoint m_current_point;
 
     void update_rotation(const Point& prev, const Point& curr);
 
     void normalize();
 
+    void draw_axes(QPainter& painter);
+
    public:
     explicit Canvas(QWidget* parent = nullptr, DataModel* model = nullptr);
 
     void paintEvent(QPaintEvent* event) override;
+
+   protected:
+    void mousePressEvent(QMouseEvent* event) override;
+    void mouseMoveEvent(QMouseEvent* event) override;
+    void mouseReleaseEvent(QMouseEvent* event) override;
+    void mouseDoubleClickEvent(QMouseEvent* event) override;
 };

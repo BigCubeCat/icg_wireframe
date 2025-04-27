@@ -1,7 +1,9 @@
 #include "canvas.hpp"
 
+#include <qevent.h>
 #include <qlogging.h>
 #include <qnamespace.h>
+#include <qpainterpath.h>
 #include <qtpreprocessorsupport.h>
 #include <qwidget.h>
 #include <QTimer>
@@ -9,150 +11,165 @@
 #include <algorithm>
 #include <cmath>
 #include "Eigen/src/Core/Matrix.h"
+#include "canvas_utils.hpp"
 
-const int kViewSize = 200;
+const int kAxesSize = 50;
 
 Canvas::Canvas(QWidget* parent, DataModel* model)
-    : QWidget(parent),
-      m_data(model),
-      m_rotation(Eigen::Matrix4d::Identity()),
-      m_translate(Eigen::Matrix4d::Identity()) {
-    m_camera_perspective << 2 * m_near_clip, 0, 0, 0, 0, 2 * m_near_clip, 0, 0,
-        0, 0, 1, 0, 0, 0, 1, 0;
-    qDebug() << "Canvas() " << width() << " " << height() << isVisible();
-    setVisible(true);
-}
+    : QWidget(parent), m_data(model) {}
 
 void Canvas::paintEvent(QPaintEvent* event) {
     Q_UNUSED(event);
-    const auto center_x = width() / 2;
-    const auto center_y = height() / 2;
+
+    auto spline = m_data->spline();
+    spline.calc_figure();
+    auto x = spline.x();
+    auto y = spline.y();
+    auto z = spline.z();
+
+    const size_t slices = 36;  // Количество сегментов вращения
+    const size_t size = x.size();
     QPainter painter(this);
-    painter.fillRect(rect(), Qt::yellow);
-    painter.setRenderHint(QPainter::Antialiasing);
-    painter.setPen(QPen(Qt::darkBlue, 3));
-    for (size_t i = 0; i < m_edges.size(); ++i) {
-        const auto point_a = m_figure_points[m_edges[i]];
-        const auto point_b = m_figure_points[m_edges[i + 1]];
-        qDebug() << center_x + (point_a.x() * kViewSize) << " "
-                 << center_y - (point_a.y() * kViewSize) << " "
-                 << center_x + (point_b.x() * kViewSize) << " "
-                 << center_y - (point_b.y() * kViewSize);
-        painter.drawLine(center_x + (point_a.x() * kViewSize),
-                         center_y - (point_a.y() * kViewSize),
-                         center_x + (point_b.x() * kViewSize),
-                         center_y - (point_b.y() * kViewSize));
+    painter.setRenderHint(QPainter::Antialiasing, true);
+    painter.fillRect(rect(), Qt::white);
+
+    // Параметры
+    const int m = m_data->m();          // Количество меридианов (сплайнов)
+    const double rotation_speed = 0.5;  // Скорость вращения
+
+    // Матрицы преобразований
+    Eigen::Matrix4d view_matrix;
+    view_matrix << 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 5,  // Сдвиг камеры по Z
+        0, 0, 0, 1;
+
+    Eigen::Matrix4d projection_matrix;
+    const double fov = M_PI / 4;
+    projection_matrix << 1 / (tan(fov / 2)), 0, 0, 0, 0, 1 / (tan(fov / 2)), 0,
+        0, 0, 0, -1, -1, 0, 0, -1, 0;
+
+    // Структура для хранения линий с цветом
+    struct Line {
+        QPointF p1;
+        QPointF p2;
+        double avgDepth;
+        QColor color;
+    };
+
+    std::vector<Line> lines;
+    const double angle_step = 2 * M_PI / m;
+
+    // Генерация линий для всех меридианов
+    for (int i = 0; i < m; ++i) {
+        const double angle = (angle_step * i) + m_rotation_angle;
+        const Eigen::Matrix3d rotation =
+            Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitZ()).matrix();
+
+        // Преобразуем и проектируем точки
+        std::vector<QPointF> screen_points;
+        std::vector<double> depths;
+
+        for (size_t j = 0; j < size; ++j) {
+            Eigen::Vector3d point(x[j], y[j], 0);
+            Eigen::Vector3d rotated = rotation * point;
+            Eigen::Vector4d view_space = view_matrix * rotated.homogeneous();
+            Eigen::Vector4d clip_space = projection_matrix * view_space;
+
+            // Перспективное деление
+            const double w = clip_space.w();
+            QPointF screen_point((clip_space.x() / w + 1.0) * width() / 2,
+                                 (1.0 - clip_space.y() / w) * height() / 2);
+
+            screen_points.push_back(screen_point);
+            depths.push_back(view_space.z());
+        }
+
+        // Создаем линии между точками
+        for (size_t j = 0; j < screen_points.size() - 1; ++j) {
+            const double avg_depth = (depths[j] + depths[j + 1]) / 2;
+            lines.push_back({screen_points[j], screen_points[j + 1], avg_depth,
+                             Qt::transparent});
+            qDebug() << "AddLine";
+        }
     }
+
+    // Находим диапазон глубин
+    auto [minDepth, maxDepth] = std::minmax_element(
+        lines.begin(), lines.end(),
+        [](const Line& a, const Line& b) { return a.avgDepth < b.avgDepth; });
+    // Присваиваем цвета
+    const double depth_range = maxDepth->avgDepth - minDepth->avgDepth;
+    for (Line& line : lines) {
+        line.color = interpolate_color(
+            m_nearColor, m_farColor,
+            (line.avgDepth - minDepth->avgDepth) / depth_range);
+    }
+
+    // Сортировка линий по глубине (дальние -> ближние)
+    std::sort(lines.begin(), lines.end(), [](const Line& a, const Line& b) {
+        return a.avgDepth > b.avgDepth;
+    });
+
+    // Отрисовка линий
+    painter.setPen(Qt::NoPen);
+    for (const Line& line : lines) {
+        qDebug() << line.p1 << " " << line.p2;
+        QPainterPath path;
+        path.moveTo(line.p1);
+        path.lineTo(line.p2);
+
+        QPen pen(line.color, 1.5);
+        pen.setCosmetic(true);  // Фиксированная толщина
+        painter.setPen(pen);
+        painter.drawPath(path);
+    }
+
+    // Обновление угла для анимации
+    m_rotation_angle += 0.005;
+    draw_axes(painter);  // Реализуйте отдельно при необходимости
+    update();
 }
 
 void Canvas::pallete_changed(const QColor& a, const QColor& b) {
-    m_close = a;
-    m_far = b;
+    m_nearColor = a;
+    m_farColor = b;
     update();
 }
 
-void Canvas::update_rotation(const Point& prev, const Point& curr) {
-    Eigen::Vector4d axis(-(curr.y() - prev.y()), -(curr.x() - prev.x()), 0,
-                         1.0);
-    axis.normalize();
-
-    double c = cos(m_rotation_angle);
-    double s = sin(m_rotation_angle);
-    double x = axis.x();
-    double y = axis.y();
-    double z = axis.z();
-
-    auto rot = Eigen::Matrix4d();
-    rot << c + ((1 - c) * x * x), ((1 - c) * x * y) - (s * z),
-        ((1 - c) * x * z) + (s * y), 0, ((1 - c) * y * x) + (s * z),
-        c + ((1 - c) * y * y), ((1 - c) * y * z) - (s * x), 0,
-        ((1 - c) * z * x) - (s * y), ((1 - c) * z * y) + (s * x),
-        c + ((1 - c) * z * z), 0, 0, 0, 0, 1.0;
-
-    m_translate = rot * m_translate;
-    m_rotation = rot * m_rotation;
+void Canvas::mousePressEvent(QMouseEvent* event) {
+    if (event->button() == Qt::LeftButton) {
+        m_begin_point = event->pos();
+        m_is_draging = true;
+    }
 }
 
-void Canvas::normalize() {
-    auto spline = m_data->spline();
-    auto max = spline.max_value();
-    auto min = spline.min_value();
-
-    m_sw = max[0];
-    m_sh = max[1];
-
-    double dist_x = max[0] - min[0];
-    double dist_y = max[1] - min[1];
-    double dist_z = max[2] - min[2];
-
-    double res = std::max({dist_x, dist_y, dist_z});
-    if (std::abs(res) <= 1.e-6)
-        res = 1.0;
-
-    m_normalize = Eigen::Matrix4d();
-    double tmp = 1.0 / res;
-    m_normalize << tmp, 0, 0, 0, 0, tmp, 0, 0, 0, 0, tmp, 0, 0, 0, 0, 1;
+void Canvas::mouseMoveEvent(QMouseEvent* event) {
+    if (m_is_draging) {
+        m_current_point = event->pos();
+    }
 }
 
-void Canvas::create_points() {
-    auto spline = m_data->spline();
-
-    auto spline_points = m_data->spline_points();
-
-    auto m = m_data->m();
-    auto n = m_data->n();
-    auto m1 = m_data->m1();
-    const auto k = spline_points.size();
-    const auto count_segments = m * n;
-
-    double angle = static_cast<double>(360) / count_segments;
-
-    normalize();
-    m_figure_points.clear();
-    m_figure_points.reserve(count_segments * k);
-    m_edges.clear();
-    m_edges.reserve(count_segments * k * 3);
-
-    for (size_t i = 0; i < count_segments; i++) {
-        auto current_angle = i * angle * M_PI / 180;
-        auto cosinus = cos(current_angle);
-        auto sinus = cos(current_angle);
-
-        for (const auto& point : spline_points) {
-            Eigen::Vector4d canvas_point(point.y() * cosinus, point.y() * sinus,
-                                         point.x(), 1.0);
-            canvas_point = m_translate * canvas_point;
-            canvas_point = m_camera_translate * canvas_point;
-            canvas_point = m_normalize * canvas_point;
-            m_figure_points.push_back(canvas_point);
-        }
+void Canvas::mouseReleaseEvent(QMouseEvent* event) {
+    if (event->button() == Qt::LeftButton && m_is_draging) {
+        qDebug() << "mouseReleaseEvent()\n";
+        m_is_draging = false;
     }
+}
 
-    for (size_t i = 0; i < count_segments; i += n) {
-        for (size_t j = 0; j < k - 1; j++) {
-            m_edges.push_back(j + (i * k));
-            m_edges.push_back(j + 1 + (i * k));
-        }
-    }
-    for (size_t i = 0; i < count_segments; ++i) {
-        m_edges.push_back(i * k);
-        m_edges.push_back(((i + 1) % (count_segments)) * k);
-    }
+void Canvas::mouseDoubleClickEvent(QMouseEvent* event) {
+    // TODO: reset rotation
+}
 
-    for (size_t i = 0; i < count_segments; i++) {
-        m_edges.push_back((i * k) + k - 1);
-        m_edges.push_back((((i + 1) % (count_segments)) * k) + k - 1);
-    }
+void Canvas::draw_axes(QPainter& painter) {
+    const QPoint center = QPoint(kAxesSize, kAxesSize);
+    // X-axis (красный)
+    painter.setPen(Qt::red);
+    painter.drawLine(center, center + QPoint(kAxesSize, 0));
 
-    if (m1 > 2) {
-        int step = k / (m1 - 1);
-        for (size_t i = 1; i <= m1 - 2; i++) {
-            for (size_t j = 0; j < count_segments; j++) {
-                m_edges.push_back((j * k) + (i * step));
-                m_edges.push_back((((j + 1) % (count_segments)) * k) +
-                                  (i * step));
-            }
-        }
-    }
-    update();
+    // Y-axis (зеленый)
+    painter.setPen(Qt::green);
+    painter.drawLine(center, center + QPoint(0, kAxesSize));
+
+    // Z-axis (синий)
+    painter.setPen(Qt::blue);
+    painter.drawLine(center, center - QPoint(kAxesSize, 0));
 }

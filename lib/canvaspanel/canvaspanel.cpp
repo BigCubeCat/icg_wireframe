@@ -22,9 +22,9 @@ CanvasPanel::CanvasPanel(QWidget* parent, DataModel* model)
 
     connect(m_ui->pushButton, &QPushButton::clicked, this,
             &CanvasPanel::on_bottom_clicked);
-
-    connect(m_data, &DataModel::redraw_spline, &m_canvas,
-            &Canvas::create_points);
+    //
+    // connect(m_data, &DataModel::redraw_spline, &m_canvas,
+    //         &Canvas::create_points);
 }
 
 CanvasPanel::~CanvasPanel() {
