@@ -29,17 +29,18 @@ class Canvas : public QWidget {
     Eigen::Vector3d m_vec_up;
 
     // Параметры пирамиды видимости
-    double m_zn = 1.0f;    // ближняя плоскость
-    double m_zf = 100.0f;  // дальняя плоскость
-    double m_sw = 2.0f;    // ширина ближней плоскости
-    double m_sh = 2.0f;    // высота ближней плоскости
+    double m_zn = 1.0;    // ближняя плоскость
+    double m_zf = 100.0;  // дальняя плоскость
+    double m_sw = 2.0;    // ширина ближней плоскости
+    double m_sh = 2.0;    // высота ближней плоскости
 
     QColor m_far_color = Qt::red;
     QColor m_near_color = Qt::blue;
 
     bool m_is_draging = false;
     QPoint m_begin_point;
-    QPoint m_current_point;
+    double m_rotation_x = 0.0;  // угол поворота вокруг X
+    double m_rotation_y = 0.0;  // угол поворота вокруг Y
 
     void normalize();
 

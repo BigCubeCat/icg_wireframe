@@ -18,6 +18,7 @@ const int kAxesSize = 50;
 const double kZoomStep = 0.1;
 const double kMaxZoom = 3;
 const double kMinZoom = 0.3;
+const double kSensitivity = 0.5;  // чувствительность
 
 Canvas::Canvas(QWidget* parent, DataModel* model)
     : QWidget(parent), m_data(model) {
@@ -40,12 +41,14 @@ void Canvas::paintEvent(QPaintEvent* event) {
     // 1) Собираем view/proj матрицы
     auto view = make_view_matrix(m_point_cam, m_point_view, m_vec_up);
     auto proj = make_projection_matrix(m_zn, m_zf, m_sw, m_sh);
+    auto rot = make_rotation_matrix(m_rotation_x, m_rotation_y);
+    auto func = proj * view * rot;
 
     // 2) Проецируем все точки
     std::vector<QPointF> pts2d;
     pts2d.reserve(fig.size());
     for (const auto& v : fig) {
-        pts2d.push_back(project_point(v, view, proj, width(), height()));
+        pts2d.push_back(project_point(v, func, width(), height()));
     }
 
     // 3) Рисуем рёбра
@@ -72,7 +75,12 @@ void Canvas::mousePressEvent(QMouseEvent* event) {
 
 void Canvas::mouseMoveEvent(QMouseEvent* event) {
     if (m_is_draging) {
-        m_current_point = event->pos();
+        QPoint delta = event->pos() - m_begin_point;
+        m_begin_point = event->pos();
+        // Вращаем на основе перемещения мыши
+        m_rotation_x += kSensitivity * delta.y();
+        m_rotation_y += kSensitivity * delta.x();
+        update();
     }
 }
 

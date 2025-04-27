@@ -15,5 +15,7 @@ Eigen::Matrix4d make_view_matrix(const Eigen::Vector3d& eye,
 Eigen::Matrix4d make_projection_matrix(double zn, double zf, double sw,
                                        double sh);
 
-QPointF project_point(const Point3D& v, const Eigen::Matrix4d& view,
-                      const Eigen::Matrix4d& proj, int width, int height);
+Eigen::Matrix4d make_rotation_matrix(double x, double y);
+
+QPointF project_point(const Point3D& v, const Eigen::Matrix4d& func, int width,
+                      int height);

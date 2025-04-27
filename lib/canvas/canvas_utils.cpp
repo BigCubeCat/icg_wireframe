@@ -1,5 +1,7 @@
 #include "canvas_utils.hpp"
 
+#include <cmath>
+
 QColor interpolate_color(const QColor& near, const QColor& far, double t) {
     t = qBound(0.0, t, 1.0);
     return QColor((far.red() * (1 - t)) + (near.red() * t),
@@ -35,13 +37,32 @@ Eigen::Matrix4d make_projection_matrix(double zn, double zf, double sw,
     return p;
 }
 
-QPointF project_point(const Point3D& v, const Eigen::Matrix4d& view,
-                      const Eigen::Matrix4d& proj, int width, int height) {
+Eigen::Matrix4d make_rotation_matrix(double x, double y) {
+    double angle_x = x * M_PI / 180.0F;
+    double angle_y = y * M_PI / 180.0F;
+
+    Eigen::Matrix4d rot_x = Eigen::Matrix4d::Identity();
+    rot_x(1, 1) = cos(angle_x);
+    rot_x(1, 2) = -sin(angle_x);
+    rot_x(2, 1) = sin(angle_x);
+    rot_x(2, 2) = cos(angle_x);
+
+    Eigen::Matrix4d rot_y = Eigen::Matrix4d::Identity();
+    rot_y(0, 0) = cos(angle_y);
+    rot_y(0, 2) = sin(angle_y);
+    rot_y(2, 0) = -sin(angle_y);
+    rot_y(2, 2) = cos(angle_y);
+
+    return rot_y * rot_x;
+}
+
+QPointF project_point(const Point3D& v, const Eigen::Matrix4d& func, int width,
+                      int height) {
     // Переводим в гомогенные координаты
     Eigen::Vector4d vh(v.x(), v.y(), v.z(), 1.0);
 
     // В camera-space, затем в clip-space
-    Eigen::Vector4d clip = proj * (view * vh);
+    Eigen::Vector4d clip = func * vh;
 
     // Перевод в NDC (Normalized Device Coordinates)
     clip /= clip.w();
