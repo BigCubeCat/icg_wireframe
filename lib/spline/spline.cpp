@@ -1,10 +1,9 @@
 #include "spline.hpp"
 
 #include <algorithm>
+#include <cmath>
 #include <cstddef>
 #include <eigen3/Eigen/Dense>
-
-#include <iostream>
 #include <iterator>
 #include <stdexcept>
 #include <utility>
@@ -26,7 +25,7 @@ BSpline::BSpline() {
     m_matrix_m << -1, 3, -3, 1, 3, -6, 3, 0, -3, 0, 3, 0, 1, 4, 1, 0;
 };
 
-std::vector<Point> BSpline::spline_points() {
+std::vector<Point2D> BSpline::spline_points() {
     return m_spline_points;
 };
 
@@ -48,28 +47,12 @@ void BSpline::operator()(double x, double y) {
         auto x = (t_vector * tmp_u).coeff(0) / 6;
         auto y = (t_vector * tmp_v).coeff(0) / 6;
         m_spline_points.emplace_back(x, y);
-        m_x_i.push_back(x);
-        m_y_i.push_back(y);
-        m_z_i.push_back(x);
     }
 }
 
 void BSpline::operator()() {
     m_spline_points.clear();
-    m_x_i.clear();
-    m_y_i.clear();
-    m_z_i.clear();
     m_spline_points.reserve(m_count_points * m_count_segmens);
-
-    m_x_i.reserve(m_count_points * m_count_segmens);
-    m_y_i.reserve(m_count_points * m_count_segmens);
-    m_z_i.reserve(m_count_points * m_count_segmens);
-    m_maximum = {0, 0, 0};
-    m_minimum = {
-        std::numeric_limits<double>::infinity(),
-        std::numeric_limits<double>::infinity(),
-        std::numeric_limits<double>::infinity(),
-    };
 
     Eigen::Matrix<double, 1, 4> t_vector;
     for (size_t i = 1; i < m_count_points - 2; ++i) {
@@ -86,19 +69,6 @@ void BSpline::operator()() {
             auto x = (t_vector * tmp_u).coeff(0) / 6;
             auto y = (t_vector * tmp_v).coeff(0) / 6;
             m_spline_points.emplace_back(x, y);
-            m_minimum = {
-                std::min(m_minimum[0], x),
-                std::min(m_minimum[1], y),
-                std::min(m_minimum[2], x),
-            };
-            m_maximum = {
-                std::max(m_maximum[0], x),
-                std::max(m_maximum[1], y),
-                std::max(m_maximum[2], x),
-            };
-            m_x_i.push_back(x);
-            m_y_i.push_back(y);
-            m_z_i.push_back(x);
         }
     }
 }
@@ -129,17 +99,40 @@ std::pair<std::vector<double>, std::vector<double>> BSpline::points() {
     return {m_points_u, m_points_v};
 }
 
-void BSpline::calc_figure() {
-    const auto size = m_x_i.size();
-    std::vector<double> figure_size;
-    std::transform(m_maximum.begin(), m_maximum.end(), m_minimum.begin(),
-                   std::back_inserter(figure_size), std::minus());
-    const double max_size =
-        *std::max_element(figure_size.begin(), figure_size.end()) / 2;
+void BSpline::calc_figure(int m, int m1) {
+    m_maximum = {0, 0, 0};
+    m_minimum = {
+        std::numeric_limits<double>::infinity(),
+        std::numeric_limits<double>::infinity(),
+        std::numeric_limits<double>::infinity(),
+    };
+
+    const double phi = 2.0 * M_PI / static_cast<double>(m);
     // производим нормализацию
-    for (size_t i = 0; i < size; ++i) {
-        m_x_i[i] = (m_x_i[i] / max_size);
-        m_y_i[i] = (m_y_i[i] / max_size);
-        m_z_i[i] = (m_z_i[i] / max_size);
+    const auto size = m_spline_points.size();
+    m_figure.clear();
+    m_figure.reserve(size * m * m1);
+    for (size_t i = 0; i < size; ++i) {  // по точкам сплайна
+        for (int j = 0; j < m; ++j) {
+            auto phi_angle = phi * i;
+            m_figure.emplace_back(m_spline_points[i].y() * cos(phi_angle),
+                                  m_spline_points[i].y() * sin(phi_angle),
+                                  m_spline_points[i].x());
+            const double theta = phi / m1;
+            for (int k = 1; k < m1; ++k) {
+                auto theta_angle = phi_angle + (theta * k);
+                m_figure.emplace_back(m_spline_points[i].y() * cos(theta_angle),
+                                      m_spline_points[i].y() * sin(theta_angle),
+                                      m_spline_points[i].x());
+            }
+        }
+    }
+    m_edges.reserve((size * m * (m1 + 1)));
+    for (size_t i = 0; i < size - 1; ++i) {  // точки сплайна
+        for (int j = 0; j < m; ++j) {
+            for (int k = 0; k < m1; ++k) {
+                m_edges.emplace_back(i * m * m1, (i + 1) * m * m1);
+            }
+        }
     }
 }

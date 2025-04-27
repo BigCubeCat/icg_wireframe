@@ -21,16 +21,25 @@ class Canvas : public QWidget {
    private:
     DataModel* m_data;
 
-    double m_rotation_angle = 0;
+    // Положение камеры
+    Eigen::Vector3d m_point_cam;
+    // Точка, на которую смотрим
+    Eigen::Vector3d m_point_view;
+    // Вектор “вверх”
+    Eigen::Vector3d m_vec_up;
 
-    QColor m_farColor = Qt::red;
-    QColor m_nearColor = Qt::blue;
+    // Параметры пирамиды видимости
+    double m_zn = 1.0f;    // ближняя плоскость
+    double m_zf = 100.0f;  // дальняя плоскость
+    double m_sw = 2.0f;    // ширина ближней плоскости
+    double m_sh = 2.0f;    // высота ближней плоскости
+
+    QColor m_far_color = Qt::red;
+    QColor m_near_color = Qt::blue;
 
     bool m_is_draging = false;
     QPoint m_begin_point;
     QPoint m_current_point;
-
-    void update_rotation(const Point& prev, const Point& curr);
 
     void normalize();
 
