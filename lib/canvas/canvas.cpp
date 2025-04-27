@@ -8,11 +8,16 @@
 #include <qwidget.h>
 #include <QTimer>
 
+#include <algorithm>
 #include <cmath>
 #include "Eigen/src/Core/Matrix.h"
 #include "canvas_utils.hpp"
 
 const int kAxesSize = 50;
+
+const double kZoomStep = 0.1;
+const double kMaxZoom = 3;
+const double kMinZoom = 0.3;
 
 Canvas::Canvas(QWidget* parent, DataModel* model)
     : QWidget(parent), m_data(model) {
@@ -80,6 +85,16 @@ void Canvas::mouseReleaseEvent(QMouseEvent* event) {
 
 void Canvas::mouseDoubleClickEvent(QMouseEvent* event) {
     // TODO: reset rotation
+}
+
+void Canvas::wheelEvent(QWheelEvent* event) {
+    const int delta = event->angleDelta().y();
+    if (delta > 0) {
+        m_zn = std::min(m_zn + kZoomStep, kMaxZoom);
+    } else if (delta < 0) {
+        m_zn = std::max(m_zn - kZoomStep, kMinZoom);
+    }
+    update();
 }
 
 void Canvas::draw_axes(QPainter& painter) {
