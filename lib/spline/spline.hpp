@@ -22,6 +22,7 @@ class BSpline {
     std::vector<Point2D> m_spline_points;
     std::vector<Point3D> m_figure;
     std::vector<Point2I> m_edges;
+    std::vector<size_t> m_layers;
 
     double m_step = 0.5;
 

@@ -40,6 +40,7 @@ void BSpline::operator()(double x, double y) {
     Eigen::Matrix<double, 1, 4> t_vector;
     auto tmp_u = m_matrix_m * u_vector;
     auto tmp_v = m_matrix_m * v_vector;
+    m_layers.push_back(m_spline_points.size());
     for (size_t k = 0; k <= m_count_segmens; ++k) {
         double t = m_step * k;
         get_t_vector(t_vector, t);
@@ -50,6 +51,7 @@ void BSpline::operator()(double x, double y) {
 }
 
 void BSpline::operator()() {
+    m_layers.clear();
     m_spline_points.clear();
     m_spline_points.reserve(m_count_points * m_count_segmens);
 
@@ -61,7 +63,7 @@ void BSpline::operator()() {
                                              static_cast<ptrdiff_t>(i - 1));
         auto tmp_u = m_matrix_m * u_vector;
         auto tmp_v = m_matrix_m * v_vector;
-
+        m_layers.push_back(m_spline_points.size());
         for (size_t k = 0; k <= m_count_segmens; ++k) {
             double t = m_step * k;
             get_t_vector(t_vector, t);
@@ -70,6 +72,7 @@ void BSpline::operator()() {
             m_spline_points.emplace_back(x, y);
         }
     }
+    m_layers.push_back(m_spline_points.size() - m_count_segmens);
 }
 
 void BSpline::set_points(std::vector<double> u, std::vector<double> v) {
@@ -99,47 +102,40 @@ std::pair<std::vector<double>, std::vector<double>> BSpline::points() {
 }
 
 void BSpline::calc_figure(int m, int m1) {
-    m_maximum = {0, 0, 0};
-    m_minimum = {
-        std::numeric_limits<double>::infinity(),
-        std::numeric_limits<double>::infinity(),
-        std::numeric_limits<double>::infinity(),
-    };
-
     const double phi = 2.0 * M_PI / static_cast<double>(m);
     // производим нормализацию
     const auto size = m_spline_points.size();
+    const auto count_main = m_layers.size();
+    const size_t mm = m1 * m;
     m_figure.clear();
     m_figure.reserve(size * m * m1);
     m_edges.reserve((size * m * (m1 + 1)));
-    for (size_t i = 0; i < size; ++i) {  // по точкам сплайна
-        for (int j = 0; j < m; ++j) {
-            auto phi_angle = phi * j;
-            auto index = m_figure.size();
+    for (int j = 0; j < m; ++j) {  // идем по образующим
+        auto phi_angle = phi * j;
+        int prev = -1;
+        for (size_t i = 0; i < size; ++i) {  // по точкам сплайна
             m_figure.emplace_back(m_spline_points[i].y() * cos(phi_angle),
                                   m_spline_points[i].y() * sin(phi_angle),
                                   m_spline_points[i].x());
+            auto curr = m_figure.size() - 1;
+            if (prev > 0) {
+                m_edges.emplace_back(prev, curr);
+            }
+            prev = curr;
+
             const double theta = phi / m1;
-            for (int k = 1; k < m1; ++k) {
+            for (int k = 0; k < m1; ++k) {
                 auto theta_angle = phi_angle + (theta * k);
                 m_figure.emplace_back(m_spline_points[i].y() * cos(theta_angle),
                                       m_spline_points[i].y() * sin(theta_angle),
                                       m_spline_points[i].x());
-                m_edges.emplace_back(index, index + 1);
-                index++;
             }
         }
     }
-    const auto mm = m * m1;
-    std::cout << size << std::endl;
-    for (size_t i = 0; i < size; ++i) {  // точки сплайна
-        auto index = i;
-        for (int j = 0; j < mm - 1; ++j) {
-            // m_edges.emplace_back(index, index++);
-        }
-        // m_edges.emplace_back(index, i);
-    }
-    for (int j = 0; j < m; ++j) {
-        auto second = (j + 1) % m;
-    }
+    // for (size_t index = 0; index < count_main; ++index) {
+    //     auto i = m_layers[index];
+    //     for (int j = 0; j < mm; ++j) {
+    //         // m_edges.emplace_back(i + j, (i + j + 1) % mm);
+    //     }
+    // }
 }
