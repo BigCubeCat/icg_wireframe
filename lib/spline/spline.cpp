@@ -40,7 +40,6 @@ void BSpline::operator()(double x, double y) {
     Eigen::Matrix<double, 1, 4> t_vector;
     auto tmp_u = m_matrix_m * u_vector;
     auto tmp_v = m_matrix_m * v_vector;
-    m_layers.push_back(m_spline_points.size());
     for (size_t k = 0; k <= m_count_segmens; ++k) {
         double t = m_step * k;
         get_t_vector(t_vector, t);
@@ -51,7 +50,6 @@ void BSpline::operator()(double x, double y) {
 }
 
 void BSpline::operator()() {
-    m_layers.clear();
     m_spline_points.clear();
     m_spline_points.reserve(m_count_points * m_count_segmens);
 
@@ -63,7 +61,6 @@ void BSpline::operator()() {
                                              static_cast<ptrdiff_t>(i - 1));
         auto tmp_u = m_matrix_m * u_vector;
         auto tmp_v = m_matrix_m * v_vector;
-        m_layers.push_back(m_spline_points.size());
         for (size_t k = 0; k <= m_count_segmens; ++k) {
             double t = m_step * k;
             get_t_vector(t_vector, t);
@@ -72,7 +69,6 @@ void BSpline::operator()() {
             m_spline_points.emplace_back(x, y);
         }
     }
-    m_layers.push_back(m_spline_points.size() - m_count_segmens);
 }
 
 void BSpline::set_points(std::vector<double> u, std::vector<double> v) {
@@ -105,15 +101,22 @@ void BSpline::calc_figure(int m, int m1) {
     const double phi = 2.0 * M_PI / static_cast<double>(m);
     // производим нормализацию
     const auto size = m_spline_points.size();
-    const auto count_main = m_layers.size();
     const size_t mm = m1 * m;
     m_figure.clear();
     m_figure.reserve(size * m * m1);
     m_edges.reserve((size * m * (m1 + 1)));
+    const auto count_horizontals = m_points_u.size();
+
+    std::vector<std::vector<int>> layers;
+    layers.reserve(m);
+
     for (int j = 0; j < m; ++j) {  // идем по образующим
         auto phi_angle = phi * j;
         int prev = -1;
+        std::vector<int> layer;
+        layer.reserve(count_horizontals);
         for (size_t i = 0; i < size; ++i) {  // по точкам сплайна
+            auto has_line = i % count_horizontals == 0 || i == size - 1;
             m_figure.emplace_back(m_spline_points[i].y() * cos(phi_angle),
                                   m_spline_points[i].y() * sin(phi_angle),
                                   m_spline_points[i].x());
@@ -124,18 +127,27 @@ void BSpline::calc_figure(int m, int m1) {
             prev = curr;
 
             const double theta = phi / m1;
-            for (int k = 0; k < m1; ++k) {
+            int prev_k = curr;
+            for (int k = 1; k < m1; ++k) {
                 auto theta_angle = phi_angle + (theta * k);
+                curr = m_figure.size();
                 m_figure.emplace_back(m_spline_points[i].y() * cos(theta_angle),
                                       m_spline_points[i].y() * sin(theta_angle),
                                       m_spline_points[i].x());
+                if (has_line)
+                    m_edges.emplace_back(prev_k, curr);
+                prev_k = curr;
+            }
+            if (has_line) {
+                layer.push_back(curr);
             }
         }
+        layers.push_back(layer);
     }
-    // for (size_t index = 0; index < count_main; ++index) {
-    //     auto i = m_layers[index];
-    //     for (int j = 0; j < mm; ++j) {
-    //         // m_edges.emplace_back(i + j, (i + j + 1) % mm);
-    //     }
-    // }
+    auto ls = layers.size();
+    for (size_t i = 0; i < ls; ++i) {
+        for (int j = 0; j < layers[i].size(); ++j) {
+            m_edges.emplace_back(layers[i][j], layers[(i + 1) % ls][j]);
+        }
+    }
 }
