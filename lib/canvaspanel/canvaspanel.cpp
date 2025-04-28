@@ -35,6 +35,7 @@ void CanvasPanel::on_top_clicked() {
     auto new_color = ask_color(m_gradient.a());
     if (new_color.has_value()) {
         m_gradient.set_a_color(new_color.value());
+        m_canvas.pallete_changed(m_gradient.b(), m_gradient.a());
     }
 }
 
@@ -42,6 +43,7 @@ void CanvasPanel::on_bottom_clicked() {
     auto new_color = ask_color(m_gradient.b());
     if (new_color.has_value()) {
         m_gradient.set_b_color(new_color.value());
+        m_canvas.pallete_changed(m_gradient.b(), m_gradient.a());
     }
 }
 

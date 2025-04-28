@@ -55,14 +55,11 @@ void Canvas::paintEvent(QPaintEvent* event) {
     for (const auto& v : fig) {
         double depth;
         auto new_point = project_point(v, func, proj, width(), height(), depth);
-        qDebug() << depth;
         ts.push_back(depth);
         max = std::max(max, depth);
         min = std::min(min, depth);
         pts2d.push_back(new_point);
     }
-    const auto norm = max + min;
-    qDebug() << "norm=" << norm;
 
     // 3) Рисуем рёбра
     for (auto& e : edges) {
