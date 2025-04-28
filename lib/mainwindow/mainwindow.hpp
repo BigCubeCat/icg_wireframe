@@ -6,6 +6,7 @@
 #include "model.hpp"
 
 #include <qboxlayout.h>
+#include <qtimer.h>
 #include <QActionGroup>
 #include <QMainWindow>
 
@@ -21,6 +22,7 @@ class MainWindow : public QMainWindow {
     void open();
     void save();
     void save_as();
+    void open_file();
 
    public:
     explicit MainWindow(QWidget* parent);

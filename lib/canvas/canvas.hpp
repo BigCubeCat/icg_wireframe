@@ -46,6 +46,8 @@ class Canvas : public QWidget {
 
     void paintEvent(QPaintEvent* event) override;
 
+    void update_from_data();
+
    protected:
     void mousePressEvent(QMouseEvent* event) override;
     void mouseMoveEvent(QMouseEvent* event) override;

@@ -86,11 +86,15 @@ void Canvas::paintEvent(QPaintEvent* event) {
 
         p.drawLine(a, b);
     }
+    draw_axes(p);
 }
 
 void Canvas::pallete_changed(const QColor& a, const QColor& b) {
     m_near_color = a;
     m_far_color = b;
+    m_data->m_near = m_near_color;
+    m_data->m_far = m_far_color;
+
     update();
 }
 
@@ -108,13 +112,14 @@ void Canvas::mouseMoveEvent(QMouseEvent* event) {
         // Вращаем на основе перемещения мыши
         m_rotation_x += kSensitivity * delta.y();
         m_rotation_y += kSensitivity * delta.x();
+        m_data->m_rot_x = m_rotation_x;
+        m_data->m_rot_y = m_rotation_y;
         update();
     }
 }
 
 void Canvas::mouseReleaseEvent(QMouseEvent* event) {
     if (event->button() == Qt::LeftButton && m_is_draging) {
-        qDebug() << "mouseReleaseEvent()\n";
         m_is_draging = false;
     }
 }
@@ -124,6 +129,9 @@ void Canvas::mouseDoubleClickEvent(QMouseEvent* event) {
     m_zn = kDefaultZn;
     m_rotation_x = 0;
     m_rotation_y = 0;
+    m_data->m_zn = m_zn;
+    m_data->m_rot_x = m_rotation_x;
+    m_data->m_rot_y = m_rotation_y;
     update();
 }
 
@@ -134,20 +142,62 @@ void Canvas::wheelEvent(QWheelEvent* event) {
     } else if (delta < 0) {
         m_zn = std::max(m_zn - kZoomStep, kMinZoom);
     }
+    m_data->m_zn = m_zn;
     update();
+}
+
+void Canvas::update_from_data() {
+    m_rotation_x = m_data->m_rot_x;
+    m_rotation_y = m_data->m_rot_y;
+    m_zn = m_data->m_zn;
+    m_far_color = m_data->m_far;
+    m_near_color = m_data->m_near;
 }
 
 void Canvas::draw_axes(QPainter& painter) {
     const QPoint center = QPoint(kAxesSize, kAxesSize);
-    // X-axis (красный)
+
+    // Углы вращения в радианах
+    double alpha = qDegreesToRadians(m_rotation_x);  // Вращение вокруг X
+    double beta = qDegreesToRadians(-m_rotation_y);  // Вращение вокруг Y
+
+    // Вычисляем синусы и косинусы
+    double cos_alpha = cos(alpha);
+    double sin_alpha = sin(alpha);
+    double cos_beta = cos(beta);
+    double sin_beta = sin(beta);
+
+    // Проекция 3D точки в 2D (x_proj = x - z, y_proj = y)
+    auto project = [](double x, double y, double z) -> QPointF {
+        return QPointF(x - z, y);
+    };
+
+    // Вычисляем координаты концов осей после вращений
+    // Ось X (красный)
     painter.setPen(Qt::red);
-    painter.drawLine(center, center + QPoint(kAxesSize, 0));
+    QPointF x_axis = project(cos_beta,              // X после вращения вокруг Y
+                             sin_beta * sin_alpha,  // Y после вращения вокруг X
+                             -sin_beta * cos_alpha  // Z после вращения вокруг X
+                             ) *
+                     kAxesSize;
+    painter.drawLine(center, center + x_axis.toPoint());
 
-    // Y-axis (зеленый)
+    // Ось Y (зеленый)
     painter.setPen(Qt::green);
-    painter.drawLine(center, center + QPoint(0, kAxesSize));
+    QPointF y_axis = project(0,          // X остаётся 0
+                             cos_alpha,  // Y после вращения вокруг X
+                             sin_alpha   // Z после вращения вокруг X
+                             ) *
+                     kAxesSize;
+    painter.drawLine(center, center + y_axis.toPoint());
 
-    // Z-axis (синий)
+    // Ось Z (синий)
     painter.setPen(Qt::blue);
-    painter.drawLine(center, center - QPoint(kAxesSize, 0));
+    QPointF z_axis =
+        project(sin_beta,               // X после вращения вокруг Y
+                -cos_beta * sin_alpha,  // Y после вращения вокруг X
+                cos_beta * cos_alpha    // Z после вращения вокруг X
+                ) *
+        kAxesSize;
+    painter.drawLine(center, center + z_axis.toPoint());
 }

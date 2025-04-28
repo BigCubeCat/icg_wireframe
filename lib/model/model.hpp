@@ -1,5 +1,6 @@
 #pragma once
 
+#include <qcolor.h>
 #include <qobject.h>
 
 #include "../spline/point.hpp"
@@ -8,6 +9,12 @@
 class DataModel : public QObject {
     Q_OBJECT
    public:
+    double m_zn;
+    double m_rot_x;
+    double m_rot_y;
+    QColor m_near;
+    QColor m_far;
+
     explicit DataModel(QObject* parent = nullptr) : QObject(parent) {}
     void set_points(std::vector<double> u, std::vector<double> v);
     std::vector<Point2D> spline_points() const { return m_spline_points; };
