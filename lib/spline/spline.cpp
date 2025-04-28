@@ -101,53 +101,43 @@ void BSpline::calc_figure(int m, int m1) {
     const double phi = 2.0 * M_PI / static_cast<double>(m);
     // производим нормализацию
     const auto size = m_spline_points.size();
-    const size_t mm = m1 * m;
     m_figure.clear();
     m_figure.reserve(size * m * m1);
     m_edges.reserve((size * m * (m1 + 1)));
     const auto count_horizontals = m_points_u.size();
-
-    std::vector<std::vector<int>> layers;
-    layers.reserve(m);
+    std::vector<size_t> mains;
+    mains.reserve(count_horizontals);
+    mains.push_back(0);
+    mains.push_back(size - 1);
 
     for (int j = 0; j < m; ++j) {  // идем по образующим
         auto phi_angle = phi * j;
-        int prev = -1;
-        std::vector<int> layer;
-        layer.reserve(count_horizontals);
-        for (size_t i = 0; i < size; ++i) {  // по точкам сплайна
-            auto has_line = i % count_horizontals == 0 || i == size - 1;
+        m_figure.emplace_back(m_spline_points[0].y() * cos(phi_angle),
+                              m_spline_points[0].y() * sin(phi_angle),
+                              m_spline_points[0].x());
+        for (size_t i = 1; i < size; ++i) {  // по точкам сплайна
+            m_edges.emplace_back(m_figure.size() - 1, m_figure.size());
             m_figure.emplace_back(m_spline_points[i].y() * cos(phi_angle),
                                   m_spline_points[i].y() * sin(phi_angle),
                                   m_spline_points[i].x());
-            auto curr = m_figure.size() - 1;
-            if (prev > 0) {
-                m_edges.emplace_back(prev, curr);
+            if (j == 0 && i % count_horizontals == 0) {
+                mains.push_back(i);
             }
-            prev = curr;
+        }
+    }
 
-            const double theta = phi / m1;
-            int prev_k = curr;
-            for (int k = 1; k < m1; ++k) {
+    const double theta = phi / m1;
+    for (const auto& i : mains) {
+        for (int j = 0; j < m; ++j) {  // идем по образующим
+            auto phi_angle = phi * j;
+            for (int k = 0; k < m1 + 1; ++k) {
                 auto theta_angle = phi_angle + (theta * k);
-                curr = m_figure.size();
+                if (k > 0)
+                    m_edges.emplace_back(m_figure.size(), m_figure.size() - 1);
                 m_figure.emplace_back(m_spline_points[i].y() * cos(theta_angle),
                                       m_spline_points[i].y() * sin(theta_angle),
                                       m_spline_points[i].x());
-                if (has_line)
-                    m_edges.emplace_back(prev_k, curr);
-                prev_k = curr;
             }
-            if (has_line) {
-                layer.push_back(curr);
-            }
-        }
-        layers.push_back(layer);
-    }
-    auto ls = layers.size();
-    for (size_t i = 0; i < ls; ++i) {
-        for (int j = 0; j < layers[i].size(); ++j) {
-            m_edges.emplace_back(layers[i][j], layers[(i + 1) % ls][j]);
         }
     }
 }
