@@ -4,14 +4,9 @@
 
 #include <QPainter>
 #include <QWidget>
-#include <vector>
-#include "canvas_utils.hpp"
 #include "model.hpp"
 
-struct Vertex3D {
-    double x, y, z;
-    Vertex3D(double x, double y, double z) : x(x), y(y), z(z) {}
-};
+const double kDefaultZn = 1.0;
 
 class Canvas : public QWidget {
     Q_OBJECT
@@ -29,10 +24,10 @@ class Canvas : public QWidget {
     Eigen::Vector3d m_vec_up;
 
     // Параметры пирамиды видимости
-    double m_zn = 1.0;   // ближняя плоскость
-    double m_zf = 10.0;  // дальняя плоскость
-    double m_sw = 2.0;   // ширина ближней плоскости
-    double m_sh = 2.0;   // высота ближней плоскости
+    double m_zn = kDefaultZn;  // ближняя плоскость
+    double m_zf = 10.0;        // дальняя плоскость
+    double m_sw = 2.0;         // ширина ближней плоскости
+    double m_sh = 2.0;         // высота ближней плоскости
 
     QColor m_far_color = Qt::red;
     QColor m_near_color = Qt::blue;

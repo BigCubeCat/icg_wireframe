@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include "Eigen/src/Core/Matrix.h"
 #include "canvas_utils.hpp"
 
@@ -42,20 +43,50 @@ void Canvas::paintEvent(QPaintEvent* event) {
     auto view = make_view_matrix(m_point_cam, m_point_view, m_vec_up);
     auto proj = make_projection_matrix(m_zn, m_zf, m_sw, m_sh);
     auto rot = make_rotation_matrix(m_rotation_x, m_rotation_y);
-    auto func = proj * view * rot;
+    auto func = view * rot;
 
     // 2) Проецируем все точки
     std::vector<QPointF> pts2d;
     pts2d.reserve(fig.size());
+    std::vector<double> ts;
+    ts.reserve(fig.size());
+    double max = std::numeric_limits<double>::min();
+    double min = std::numeric_limits<double>::max();
     for (const auto& v : fig) {
-        pts2d.push_back(project_point(v, func, width(), height()));
+        double depth;
+        auto new_point = project_point(v, func, proj, width(), height(), depth);
+        qDebug() << depth;
+        ts.push_back(depth);
+        max = std::max(max, depth);
+        min = std::min(min, depth);
+        pts2d.push_back(new_point);
     }
+    const auto norm = max + min;
+    qDebug() << "norm=" << norm;
 
     // 3) Рисуем рёбра
-    p.setPen(Qt::black);
     for (auto& e : edges) {
-        const QPointF& a = pts2d[e.x()];
-        const QPointF& b = pts2d[e.y()];
+        int i0 = e.x();
+        int i1 = e.y();
+        const QPointF& a = pts2d[i0];
+        const QPointF& b = pts2d[i1];
+
+        // Цвета на концах
+        QColor c0 =
+            interpolate_color(m_near_color, m_far_color, ts[i0], min, max);
+        QColor c1 =
+            interpolate_color(m_near_color, m_far_color, ts[i1], min, max);
+
+        // Градиент от A к B
+        QLinearGradient grad(a, b);
+        grad.setColorAt(0.0, c0);
+        grad.setColorAt(1.0, c1);
+
+        QPen pen;
+        pen.setBrush(grad);
+        pen.setWidth(2);  // при необходимости
+        p.setPen(pen);
+
         p.drawLine(a, b);
     }
 }
@@ -92,7 +123,11 @@ void Canvas::mouseReleaseEvent(QMouseEvent* event) {
 }
 
 void Canvas::mouseDoubleClickEvent(QMouseEvent* event) {
-    // TODO: reset rotation
+    Q_UNUSED(event);
+    m_zn = kDefaultZn;
+    m_rotation_x = 0;
+    m_rotation_y = 0;
+    update();
 }
 
 void Canvas::wheelEvent(QWheelEvent* event) {

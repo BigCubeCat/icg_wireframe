@@ -2,8 +2,9 @@
 
 #include <cmath>
 
-QColor interpolate_color(const QColor& near, const QColor& far, double t) {
-    t = qBound(0.0, t, 1.0);
+QColor interpolate_color(const QColor& near, const QColor& far, double t,
+                         double min, double max) {
+    t = qBound(0.0, (t - min) / (max - min), 1.0);
     return QColor((far.red() * (1 - t)) + (near.red() * t),
                   (far.green() * (1 - t)) + (near.green() * t),
                   (far.blue() * (1 - t)) + (near.blue() * t));
@@ -56,13 +57,16 @@ Eigen::Matrix4d make_rotation_matrix(double x, double y) {
     return rot_y * rot_x;
 }
 
-QPointF project_point(const Point3D& v, const Eigen::Matrix4d& func, int width,
-                      int height) {
+QPointF project_point(const Point3D& v, const Eigen::Matrix4d& func,
+                      const Eigen::Matrix4d& proj, int width, int height,
+                      double& depth) {
     // Переводим в гомогенные координаты
     Eigen::Vector4d vh(v.x(), v.y(), v.z(), 1.0);
 
     // В camera-space, затем в clip-space
-    Eigen::Vector4d clip = func * vh;
+    Eigen::Vector4d v_cam = func * vh;
+    depth = -v_cam.z();
+    Eigen::Vector4d clip = proj * v_cam;
 
     // Перевод в NDC (Normalized Device Coordinates)
     clip /= clip.w();

@@ -1,5 +1,6 @@
 #include "spline.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <eigen3/Eigen/Dense>
@@ -110,8 +111,15 @@ void BSpline::calc_figure(int m, int m1) {
     mains.push_back(0);
     mains.push_back(size - 1);
 
+    m_maximum = 0;
+    m_minimum = std::numeric_limits<double>::max();
+
     for (int j = 0; j < m; ++j) {  // идем по образующим
         auto phi_angle = phi * j;
+        m_minimum = std::min(m_minimum, m_spline_points[0].y());
+        m_minimum = std::min(m_minimum, m_spline_points[0].x());
+        m_maximum = std::max(m_maximum, m_spline_points[0].y());
+        m_maximum = std::max(m_maximum, m_spline_points[0].x());
         m_figure.emplace_back(m_spline_points[0].y() * cos(phi_angle),
                               m_spline_points[0].y() * sin(phi_angle),
                               m_spline_points[0].x());
@@ -120,6 +128,11 @@ void BSpline::calc_figure(int m, int m1) {
             m_figure.emplace_back(m_spline_points[i].y() * cos(phi_angle),
                                   m_spline_points[i].y() * sin(phi_angle),
                                   m_spline_points[i].x());
+            m_minimum = std::min(m_minimum, m_spline_points[i].y());
+            m_minimum = std::min(m_minimum, m_spline_points[i].x());
+            m_maximum = std::max(m_maximum, m_spline_points[i].y());
+            m_maximum = std::max(m_maximum, m_spline_points[i].x());
+
             if (j == 0 && i % count_horizontals == 0) {
                 mains.push_back(i);
             }

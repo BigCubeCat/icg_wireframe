@@ -6,7 +6,8 @@
 
 #include "../spline/point.hpp"
 
-QColor interpolate_color(const QColor& near, const QColor& far, double t);
+QColor interpolate_color(const QColor& near, const QColor& far, double t,
+                         double min, double max);
 
 Eigen::Matrix4d make_view_matrix(const Eigen::Vector3d& eye,
                                  const Eigen::Vector3d& center,
@@ -17,5 +18,6 @@ Eigen::Matrix4d make_projection_matrix(double zn, double zf, double sw,
 
 Eigen::Matrix4d make_rotation_matrix(double x, double y);
 
-QPointF project_point(const Point3D& v, const Eigen::Matrix4d& func, int width,
-                      int height);
+QPointF project_point(const Point3D& v, const Eigen::Matrix4d& func,
+                      const Eigen::Matrix4d& proj, int width, int height,
+                      double& depth);

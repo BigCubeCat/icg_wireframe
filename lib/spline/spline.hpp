@@ -25,15 +25,13 @@ class BSpline {
 
     double m_step = 0.5;
 
-    std::array<double, 3> m_maximum = {1, 1, 1};
-    std::array<double, 3> m_minimum = {1, 1, 1};
+    double m_maximum = 1;
+    double m_minimum = 0;
 
    public:
     explicit BSpline();
 
-    /// 3 точки - max x, max y, max z
-    std::array<double, 3> max_value() const { return m_maximum; }
-    std::array<double, 3> min_value() const { return m_minimum; }
+    double depth() const { return m_maximum - m_minimum; }
 
     std::vector<Point3D> figure() const { return m_figure; }
 
