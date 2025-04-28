@@ -7,13 +7,13 @@
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
       m_editor(nullptr, &m_model),
-      m_cavnas(nullptr, &m_model),
+      m_canvas_panel(nullptr, &m_model),
       m_fp(&m_model),
       m_ui(new Ui::MainWindow) {
     m_ui->setupUi(this);
     m_tab2.addWidget(&m_editor);
     m_ui->tab_2->setLayout(&m_tab2);
-    m_tab1.addWidget(&m_cavnas);
+    m_tab1.addWidget(&m_canvas_panel);
     m_ui->tab->setLayout(&m_tab1);
 
     m_ui->toolBar->addActions(m_ui->menuFile->actions());

@@ -1,4 +1,5 @@
 #pragma once
+#include <array>
 #include <utility>
 #include <vector>
 #include "eigen3/Eigen/Dense"
@@ -18,19 +19,35 @@ class BSpline {
     size_t m_count_edges = 1;                    // M
     size_t m_count_edges_between_neighbors = 1;  // M1
 
-    std::vector<Point> m_spline_points;
-    std::vector<double> m_x_i;
-    std::vector<double> m_y_i;
-    std::vector<double> m_z_i;
+    std::vector<Point2D> m_spline_points;
+    std::vector<Point3D> m_figure;
+    std::vector<Point2I> m_edges;
+
+    double m_step = 0.5;
+
+    double m_maximum = 1;
+    double m_minimum = 0;
 
    public:
     explicit BSpline();
 
+    double depth() const { return m_maximum - m_minimum; }
+
+    std::vector<Point3D> figure() const { return m_figure; }
+
+    std::vector<Point2I> edges() const { return m_edges; }
+
     std::pair<std::vector<double>, std::vector<double>> points();
 
-    std::vector<Point> spline_points();
+    std::vector<Point2D> spline_points();
 
+    /// полностью пересчитвыаем сплайн
     void operator()();
+
+    /// добавляем ОДНУ точку
+    void operator()(double x, double y);
+
+    void calc_figure(int m, int m1);
 
     void set_points(std::vector<double> u, std::vector<double> v);
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "canvas.hpp"
+#include "canvaspanel.hpp"
 #include "editor.hpp"
 #include "fileprocessor.hpp"
 #include "model.hpp"
@@ -29,7 +29,7 @@ class MainWindow : public QMainWindow {
    private:
     DataModel m_model;
     Editor m_editor;
-    Canvas m_cavnas;
+    CanvasPanel m_canvas_panel;
     FileProcessor m_fp;
     Ui::MainWindow* m_ui;
 
