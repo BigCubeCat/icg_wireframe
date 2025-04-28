@@ -28,4 +28,5 @@ class CanvasPanel : public QWidget {
    private slots:
     void on_top_clicked();
     void on_bottom_clicked();
+    void on_load();
 };

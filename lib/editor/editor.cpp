@@ -41,12 +41,6 @@ Editor::Editor(QWidget* parent, DataModel* model)
 
     connect(m_ui->normalizeButton, &QPushButton::clicked, this,
             &Editor::normalize);
-
-    addPoint(QPointF(-kViewSize, 0.25 * kViewSize));
-    addPoint(QPointF(0, 0));
-    addPoint(QPointF(0 * kViewSize, 0.5 * kViewSize));
-    addPoint(QPointF(0.75 * kViewSize, 0.25 * kViewSize));
-    apply();
 }
 
 Editor::~Editor() {

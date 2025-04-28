@@ -19,6 +19,7 @@ MainWindow::MainWindow(QWidget* parent)
     m_ui->toolBar->addActions(m_ui->menuFile->actions());
 
     connectSlots();
+    open_file();
 }
 
 void MainWindow::connectSlots() {
@@ -43,4 +44,9 @@ void MainWindow::save_as() {
 
 MainWindow::~MainWindow() {
     delete m_ui;
+}
+
+void MainWindow::open_file() {
+    m_fp.read_file("assets/default.bin");
+    m_editor.open_spline();
 }

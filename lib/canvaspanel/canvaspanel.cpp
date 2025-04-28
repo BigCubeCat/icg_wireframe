@@ -22,9 +22,11 @@ CanvasPanel::CanvasPanel(QWidget* parent, DataModel* model)
 
     connect(m_ui->pushButton, &QPushButton::clicked, this,
             &CanvasPanel::on_bottom_clicked);
-    //
-    // connect(m_data, &DataModel::redraw_spline, &m_canvas,
-    //         &Canvas::create_points);
+
+    connect(m_data, &DataModel::redraw_spline, &m_canvas,
+            &Canvas::update_from_data);
+
+    connect(m_data, &DataModel::redraw_spline, this, &CanvasPanel::on_load);
 }
 
 CanvasPanel::~CanvasPanel() {
@@ -53,4 +55,9 @@ std::optional<QColor> CanvasPanel::ask_color(const QColor& old) {
         return new_color;
     }
     return std::nullopt;
+}
+
+void CanvasPanel::on_load() {
+    m_gradient.set_a_color(m_data->m_far);
+    m_gradient.set_b_color(m_data->m_near);
 }
