@@ -1,6 +1,15 @@
 <RCC>
   <qresource prefix="assets">
+    <file>assets/screens/1.png</file>
+    <file>assets/screens/2.png</file>
+    <file>assets/screens/3.png</file>
+    <file>assets/screens/4.png</file>
+    <file>assets/screens/5.png</file>
+    <file>assets/screens/6.png</file>
+    <file>assets/screens/7.png</file>
+
     <file>assets/default.bin</file>
+
     <file>assets/tool_icons_16px/bucket_fill.png</file>
     <file>assets/tool_icons_16px/pencil.png</file>
     <file>assets/tool_icons_16px/camera.png</file>
