@@ -24,6 +24,10 @@ class MainWindow : public QMainWindow {
     void save_as();
     void open_file();
 
+    void show_about();
+
+    void show_help();
+
    public:
     explicit MainWindow(QWidget* parent);
     ~MainWindow() override;
